@@ -10,7 +10,7 @@ import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 
-// Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
+// Admin-only family dashboard (owner account + admin flag; guarded again server-side).
 // Deliberately English-only — it isn't part of the translated end-user surface, so it stays
 // out of the per-language string packs.
 
@@ -26,6 +26,7 @@ const dur = ms => { const m = Math.max(0, Math.floor(ms / 60000)); return m < 60
 
 function UserDetail({ id, onChanged, close }) {
   const [d, setD] = useState(null)
+  const [temporaryPassword, setTemporaryPassword] = useState('')
   const toast = useUI(s => s.toast)
   useEffect(() => { api('/api/admin/user?id=' + encodeURIComponent(id)).then(setD).catch(e => toast(e.message)) }, [id])
   if (!d) return <div className="muted small">Loading…</div>
@@ -35,10 +36,15 @@ function UserDetail({ id, onChanged, close }) {
       .then(() => { toast(disabled ? 'User disabled' : 'User enabled'); onChanged(); close() })
       .catch(e => toast(e.message))
   }
+  const resetPassword = () => api('/api/admin/users/reset-password', { method: 'POST', body: JSON.stringify({ id: u.id }) })
+    .then(result => { setTemporaryPassword(result.temporaryPassword); onChanged(); toast('Temporary password generated') })
+    .catch(error => toast(error.message))
   return <>
     <h3 className="capitalize">{u.name}</h3>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '8px 0 12px' }}>
       {u.admin && <span className="tag acc">admin</span>}
+      {u.login && <span className="tag">{u.login}</span>}
+      {u.mustChangePassword && <span className="tag" style={{ color: 'var(--yellow)' }}>password change due</span>}
       {u.disabled && <span className="tag" style={{ color: 'var(--red)' }}>disabled</span>}
       {u.invitedBy && <span className="tag">invite {u.invitedBy}</span>}
       <span className="tag">joined {u.created ? fmtDate(u.created.slice(0, 10)) : '—'}</span>
@@ -49,10 +55,22 @@ function UserDetail({ id, onChanged, close }) {
       <div className="tile"><div className="l">Routines</div><div className="v" style={{ fontSize: '1.1rem' }}>{d.routines.length}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: '.95rem' }}>{rel(d.lastSync)}</div></div>
     </div>
+    {d.adherence && <div className="tiles" style={{ textAlign: 'left', marginTop: 10 }}>
+      <div className="tile"><div className="l">28-day adherence</div><div className="v" style={{ color: 'var(--acc)' }}>{d.adherence.percent}%</div></div>
+      <div className="tile"><div className="l">This week</div><div className="v">{d.adherence.weekCompleted}/{d.adherence.weekScheduled}</div></div>
+      <div className="tile"><div className="l">Missed</div><div className="v" style={{ color: d.adherence.missed ? 'var(--orange)' : undefined }}>{d.adherence.missed}</div></div>
+      <div className="tile"><div className="l">Streak</div><div className="v" style={{ color: 'var(--yellow)' }}>{d.adherence.streak}</div></div>
+    </div>}
     {!u.admin && <button className={'btn ' + (u.disabled ? 'primary' : 'danger')} style={{ margin: '12px 0 4px' }}
       onClick={() => u.disabled ? setDisabled(false)
         : confirmSheet({ title: 'Disable ' + u.name + '?', message: 'They are signed out everywhere and can no longer sync or log in until re-enabled.', confirmText: 'Disable', danger: true, onConfirm: () => setDisabled(true) })}>
       {u.disabled ? 'Enable account' : 'Disable account'}</button>}
+    <Button size="sm" icon="reset" onClick={resetPassword} style={{ margin: '10px 0 4px' }}>Reset password</Button>
+    {temporaryPassword && <div className="card" style={{ marginTop: 10, border: '1px solid var(--yellow)' }}>
+      <div className="small muted">Share this temporary password now. It will not be shown again.</div>
+      <div className="row between" style={{ marginTop: 8 }}><code style={{ fontSize: 16 }}>{temporaryPassword}</code>
+        <Button size="sm" onClick={() => navigator.clipboard?.writeText(temporaryPassword)}>Copy</Button></div>
+    </div>}
     <h4 className="sec">Workout history</h4>
     {d.workouts.length ? <div className="list" style={{ gap: 0 }}>
       {d.workouts.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)' }}>
@@ -64,28 +82,34 @@ function UserDetail({ id, onChanged, close }) {
   </>
 }
 
-function InvitesCard({ invites, reload }) {
+function AccountCreator({ reload }) {
   const toast = useUI(s => s.toast)
-  const gen = () => api('/api/admin/invites/new', { method: 'POST', body: '{}' })
-    .then(({ invite }) => { navigator.clipboard?.writeText(invite.code).catch(() => {}); toast('Code ' + invite.code + ' created & copied'); reload() })
-    .catch(e => toast(e.message))
-  const revoke = code => api('/api/admin/invites/revoke', { method: 'POST', body: JSON.stringify({ code }) })
-    .then(() => { toast('Code revoked'); reload() }).catch(e => toast(e.message))
-  const open = (invites || []).filter(i => !i.usedBy)
-  const used = (invites || []).filter(i => i.usedBy)
+  const [name, setName] = useState('')
+  const [login, setLogin] = useState('')
+  const [temporaryPassword, setTemporaryPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const create = async event => {
+    event?.preventDefault()
+    setBusy(true)
+    try {
+      const result = await api('/api/admin/users/create', { method: 'POST', body: JSON.stringify({ name, login }) })
+      setTemporaryPassword(result.temporaryPassword); setName(''); setLogin(''); reload(); toast('Member account created')
+    } catch (error) { toast(error.message) }
+    finally { setBusy(false) }
+  }
   return <div className="card">
-    <div className="row between"><h2 style={{ margin: 0 }}>Invite codes</h2>
-      <Button variant="primary" size="sm" onClick={gen} icon="plus">Generate</Button></div>
-    <div className="small muted" style={{ margin: '6px 0 10px' }}>{open.length} unused · {used.length} redeemed</div>
-    {open.map(i => <div key={i.code} className="row between" style={{ padding: '7px 2px', borderBottom: '1px solid var(--sep)' }}>
-      <span style={{ fontFamily: 'ui-monospace,SFMono-Regular,Menlo,monospace', fontWeight: 500, letterSpacing: '.06em' }}
-        onClick={() => { navigator.clipboard?.writeText(i.code).catch(() => {}); toast('Copied ' + i.code) }}>{i.code}</span>
-      <button className="iconbtn" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={() => revoke(i.code)} aria-label="revoke"><Icon name="trash" /></button>
-    </div>)}
-    {used.map(i => <div key={i.code} className="row between dim" style={{ padding: '7px 2px', fontSize: '.8rem' }}>
-      <span style={{ fontFamily: 'monospace' }}>{i.code}</span><span>→ {i.usedByName || 'used'}</span>
-    </div>)}
-    {!open.length && !used.length && <div className="dim small">No codes yet — generate one to invite someone.</div>}
+    <h2 style={{ margin: '0 0 12px' }}>Create family account</h2>
+    <form onSubmit={create} style={{ display: 'grid', gap: 9 }}>
+      <input className="input" value={name} onChange={event => setName(event.target.value)} placeholder="Member name" maxLength={40} />
+      <input className="input" value={login} onChange={event => setLogin(event.target.value.toLowerCase())}
+        placeholder="Login ID" autoCapitalize="none" autoCorrect="off" maxLength={32} />
+      <Button variant="primary" icon="plus" disabled={busy} onClick={create}>{busy ? 'Creating…' : 'Create account'}</Button>
+    </form>
+    {temporaryPassword && <div style={{ marginTop: 13, paddingTop: 12, borderTop: '1px solid var(--sep)' }}>
+      <div className="small muted">Temporary password — share it now. It is shown only once.</div>
+      <div className="row between" style={{ marginTop: 8 }}><code style={{ fontSize: 16 }}>{temporaryPassword}</code>
+        <Button size="sm" onClick={() => navigator.clipboard?.writeText(temporaryPassword)}>Copy</Button></div>
+    </div>}
   </div>
 }
 
@@ -153,14 +177,11 @@ export default function Admin() {
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
   const [users, setUsers] = useState(null)
-  const [invites, setInvites] = useState(null)
-  const [inviteOnly, setInviteOnly] = useState(false)
   const [tick, setTick] = useState(0)          // the ↻ button; the activity log listens to it
 
-  const loadUsers = () => api('/api/admin/users').then(d => { setUsers(d.users); setInviteOnly(d.invite_only) }).catch(e => toast(e.message || 'Failed to load'))
-  const loadInvites = () => api('/api/admin/invites').then(d => setInvites(d.invites)).catch(() => {})
+  const loadUsers = () => api('/api/admin/users').then(d => setUsers(d.users)).catch(e => toast(e.message || 'Failed to load'))
   // poll every 15s so the "training now" section stays live without a manual refresh
-  useEffect(() => { if (!user?.admin) return; loadUsers(); loadInvites(); const iv = setInterval(loadUsers, 15000); return () => clearInterval(iv) }, [])
+  useEffect(() => { if (!user?.admin) return; loadUsers(); const iv = setInterval(loadUsers, 15000); return () => clearInterval(iv) }, [])
   if (!user?.admin) return null
 
   const openUser = id => openSheet(close => <UserDetail id={id} onChanged={loadUsers} close={close} />)
@@ -173,7 +194,7 @@ export default function Admin() {
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label="Back"><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginLeft: 8 }}><h1 style={{ margin: 0 }}>Admin</h1>
         <div className="sub">{users ? users.length + ' users · ' + activeCount + ' active this week' : 'Loading…'}</div></div>
-      <button className="iconbtn" onClick={() => { loadUsers(); loadInvites(); setTick(n => n + 1) }} aria-label="refresh">↻</button>
+      <button className="iconbtn" onClick={() => { loadUsers(); setTick(n => n + 1) }} aria-label="refresh">↻</button>
     </div>
 
     <div className="tiles" style={{ marginBottom: 12 }}>
@@ -192,13 +213,17 @@ export default function Admin() {
       </div>)}
     </div>}
 
-    <InvitesCard invites={invites} reload={loadInvites} />
+    <AccountCreator reload={loadUsers} />
 
     <h4 className="sec">Users</h4>
     <div className="list">
       {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
-        <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginRight: 5 }} />}{u.name} {u.admin && <span className="tag acc" style={{ marginLeft: 4 }}>admin</span>}{u.disabled && <span className="tag" style={{ marginLeft: 4, color: 'var(--red)' }}>off</span>}</div>
-          <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · synced ' + rel(u.lastSync)}</div></div>
+        <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginRight: 5 }} />}{u.name} {u.admin && <span className="tag acc" style={{ marginLeft: 4 }}>admin</span>}{u.disabled && <span className="tag" style={{ marginLeft: 4, color: 'var(--red)' }}>off</span>}{u.mustChangePassword && <span className="tag" style={{ marginLeft: 4, color: 'var(--yellow)' }}>temp password</span>}</div>
+          <div className="dim" style={{ fontSize: '.72rem', marginTop: 2 }}>{u.login || 'legacy account'}</div>
+          <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · synced ' + rel(u.lastSync)}</div>
+          {u.adherence && <div className="ss" style={{ color: u.adherence.missed ? 'var(--orange)' : 'var(--acc)' }}>
+            {u.adherence.percent}% adherence · {u.adherence.weekCompleted}/{u.adherence.weekScheduled} this week · {u.adherence.missed} missed
+          </div>}</div>
         {u.hasPush && <Icon name="bell" title="push enabled" style={{ fontSize: 15, color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
       </div>)}
       {users && !users.length && <div className="empty">No users yet.</div>}

@@ -6,7 +6,7 @@ ARG BUILD_DATE=unknown
 
 LABEL maintainer="Duarte Santos https://gitea.com/DuarteSantos" \
     org.opencontainers.image.title="opengym-api" \
-    org.opencontainers.image.description="Backend for Self-hosted gym & body-weight tracker — plan routines, log workouts (supersets & cardio too), track your weight and progress, passkey login. Your data, your server." \
+    org.opencontainers.image.description="Bagriya FitFam private family fitness tracker backend with managed member accounts." \
     org.opencontainers.image.source="https://gitea.com/DuarteSantos/openGym" \
     org.opencontainers.image.url="https://gitea.com/DuarteSantos/-/packages/container/opengym-api" \
     org.opencontainers.image.documentation="https://gitea.com/DuarteSantos/openGym#readme" \
@@ -18,7 +18,7 @@ LABEL maintainer="Duarte Santos https://gitea.com/DuarteSantos" \
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev && npm cache clean --force
-COPY server.js ./
+COPY server.js auth.js adherence.js bootstrap-admin.js ./
 
 ENV NODE_ENV=production
 ENV PORT=3000

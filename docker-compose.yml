@@ -1,4 +1,4 @@
-name: opengym
+name: bagriya-fitfam
 
 services:
   # One-time: download the exercise images + GIFs into ./media (skipped if already there).
@@ -32,10 +32,9 @@ services:
         fi
     restart: "no"
 
-  # Passkey auth + per-user data (Node, no framework).
-  # image: prebuilt (docker compose pull). build: from source (docker compose up --build).
+  # Bagriya FitFam password auth + per-user data (Node, no framework).
   api:
-    image: gitea.com/duartesantos/opengym-api:latest
+    image: bagriya-fitfam-api:local
     build: ./api
     restart: unless-stopped
     env_file: .env
@@ -45,12 +44,12 @@ services:
       - PORT=${PORT:-3000}
       - DATA_DIR=/data
     volumes:
-      - ./data:/data         # users, passkeys, per-user state, session secret — BACK THIS UP
+      - ./data:/data         # users, password hashes, per-user state, session secret — BACK THIS UP
 
   # Builds the React frontend (multi-stage) and serves it, proxying /api → api
   # and the exercise media from the shared volume. Single origin for passkeys.
   web:
-    image: gitea.com/duartesantos/opengym-web:latest
+    image: bagriya-fitfam-web:local
     build:
       context: .
       dockerfile: web/Dockerfile

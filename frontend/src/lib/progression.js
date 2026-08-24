@@ -16,7 +16,7 @@
 //   · fewer sets than prescribed                       → miss
 // So a session that fell apart can never advance the load as though it had succeeded.
 
-import { modeOf, repStep } from './history.js'
+import { modeOf, repStep, isBw } from './history.js'
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
 
@@ -190,6 +190,10 @@ export function nextPrescription(S, cfg, routine) {
   // of the individual policies because it is true for all of them. Note the trigger is the
   // *logged* weight, not the `bw` flag: a dip done with a belt has a load to progress and
   // belongs on the normal policies, and a barbell lift logged at 0 has nothing to add to.
+  if (w <= 0 && !isBw(cfg)) {
+    return { policy, kind: 'hold', weight: 0, reps: last.goal || cfg.reps || undefined,
+      why: ['No working weight was logged — enter a weight before load progression starts.'] }
+  }
   if (w <= 0) {
     const goal = last.goal || cfg.reps || 0
     if (!last.ok || goal <= 0) return { policy, kind: 'hold', weight: 0, reps: goal || undefined, why: ['Bodyweight — same target again until every set is clean.'] }

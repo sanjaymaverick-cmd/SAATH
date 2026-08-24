@@ -1,13 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
-  <!-- App-icon source == the PWA icon (public/icon-512.png), geometry traced 1:1 so the
-       native app, the home-screen PWA and the website favicon all show the same icon.
-       Generate platform icons + splash via `npx @capacitor/assets generate` — docs/MOBILE.md. -->
-  <rect width="512" height="512" fill="#0c0e12"/>
-  <g fill="#a3e635">
-    <rect x="80" y="242" width="352" height="28"/>
-    <rect x="80" y="199" width="36" height="114"/>
-    <rect x="131" y="169" width="47" height="174"/>
-    <rect x="334" y="169" width="47" height="174"/>
-    <rect x="396" y="199" width="36" height="114"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Bagriya FitFam</title>
+  <desc id="desc">An interlocking BF monogram representing family, movement, and strength.</desc>
+  <rect width="512" height="512" rx="112" fill="#081A33"/>
+  <path fill="#FF6B1A" d="M92 92h214c72 0 122 44 122 108 0 35-15 63-43 82 34 20 53 52 53 91 0 75-55 123-137 123H92V92zm72 58v104h132c40 0 64-19 64-52 0-34-24-52-64-52H164zm0 162v126h137c44 0 69-23 69-63s-25-63-69-63H164z"/>
+  <path fill="#E6B84A" d="M204 198h169v58H262v70c0 67-35 112-99 126l-15-55c37-10 56-31 56-71V198z"/>
+  <circle cx="178" cy="176" r="27" fill="#E6B84A"/>
+  <circle cx="136" cy="221" r="18" fill="#FF6B1A"/>
 </svg>

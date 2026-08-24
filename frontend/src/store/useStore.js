@@ -5,11 +5,12 @@ import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
 import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
+import { hasData, shouldAcceptServerState } from './stateMerge.js'
 
 const KEY = 'gym_state_v1'
 export const DEF = {
   unit: 'kg', restSec: 90, sound: true, keepAwake: true, lang: 'en',
-  theme: 'dark', accent: 'lime', body: 'male', targetW: null,
+  theme: 'dark', accent: 'orange', body: 'male', targetW: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
   // effort: which per-set effort scale is logged — 'none' | 'rir' | 'rpe'. null, not 'none', so
@@ -28,11 +29,10 @@ function loadState() {
   return clone(DEF)
 }
 
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length)
-
 export const useStore = create((set, get) => {
   let pushTm = null
   let saveTm = null
+  let statusTm = null
 
   // Mobile build: mirror the state into a file in the app's data directory (survives WebView
   // storage eviction) and keep the native reminder schedule in step with the weekly plan.
@@ -84,6 +84,8 @@ export const useStore = create((set, get) => {
     S: (() => { const s = loadState(); registerCustom(s.customEx); return s })(),
     user: (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })(),
     ready: false,
+    hydrating: false,
+    saveStatus: 'idle',
 
     // Mutate a draft of S via producer fn, then persist + schedule sync.
     update(mut, push = true) {
@@ -112,18 +114,28 @@ export const useStore = create((set, get) => {
       set({ user: u })
     },
 
+    setHydrating(v) { set({ hydrating: !!v }) },
     async pushState() {
       if (!get().user) return
       clearTimeout(pushTm)
-      try { await api('/api/data', { method: 'PUT', body: JSON.stringify({ state: get().S }) }); localStorage.removeItem('gym_dirty') }
-      catch (e) { localStorage.setItem('gym_dirty', '1') }
+      set({ saveStatus: 'saving' })
+      try {
+        await api('/api/data', { method: 'PUT', body: JSON.stringify({ state: get().S }) })
+        localStorage.removeItem('gym_dirty')
+        set({ saveStatus: 'saved' })
+        clearTimeout(statusTm)
+        statusTm = setTimeout(() => set({ saveStatus: 'idle' }), 1800)
+      } catch (e) {
+        localStorage.setItem('gym_dirty', '1')
+        set({ saveStatus: 'error' })
+      }
     },
-    async pullState() {
+    async pullState(force = false) {
       try {
         const { state } = await api('/api/data')
         const S = get().S
         const dirty = localStorage.getItem('gym_dirty') === '1'
-        if (state && (!hasData(S) || ((state._ts || 0) >= (S._ts || 0) && !dirty))) {
+        if (shouldAcceptServerState(S, state, dirty, force)) {
           const active = S.active
           const next = Object.assign(clone(DEF), state)
           if (active) next.active = active
@@ -202,7 +214,7 @@ export const useStore = create((set, get) => {
       } catch (e) {
         if (e.status === 401) get().setUser(null)
       }
-      set({ ready: true })
+      set({ ready: true, hydrating: false })
     }
   }
 })

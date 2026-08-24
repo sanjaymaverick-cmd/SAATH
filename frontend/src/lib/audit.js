@@ -1,7 +1,7 @@
 // Rendering for the admin activity log (GET /api/admin/audit).
 //
-// The server stores reason codes, not sentences — `{ ev: 'auth.login.fail', msg: 'unknown-credential' }`
-// rather than "someone tried a passkey we don't know". Turning those into English
+// The server stores reason codes, not sentences — `{ ev: 'auth.login.fail', msg: 'invalid-credentials' }`.
+// Turning those into English
 // belongs here and not in Admin.jsx: it is the only part of the feature that can be wrong in a way
 // a person sees, and as a plain module it is testable without mounting the dashboard.
 //
@@ -21,6 +21,9 @@ const LABELS = {
   'auth.register.denied': 'Signup refused',
   'auth.logout': 'Signed out',
   'auth.logout.all': 'Signed out everywhere',
+  'auth.password.change': 'Changed password',
+  'admin.user.create': 'Created a family account',
+  'admin.user.password-reset': 'Reset an account password',
   'admin.user.disable': 'Disabled an account',
   'admin.user.enable': 'Re-enabled an account',
   'admin.invite.create': 'Created an invite code',
@@ -39,6 +42,7 @@ const REASONS = {
   'not-verified': 'the passkey was rejected',
   'user-missing': 'the passkey points at a profile that no longer exists',
   'account-disabled': 'the account is disabled',
+  'invalid-credentials': 'invalid login ID or password',
   'credential-exists': 'that passkey already belongs to a profile',
   'invite-invalid': 'the invite code was used or revoked in the meantime',
   'invite-rejected': 'wrong or already-used invite code'

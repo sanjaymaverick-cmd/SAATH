@@ -115,16 +115,16 @@ export function Segmented({ options, value, onChange, className = '' }) {
 
 /* ============================ stepper ============================ */
 
-export function Stepper({ value, step = 1, onChange, decimal = true, className = '', label, unit }) {
+export function Stepper({ value, step = 1, onChange, decimal = true, className = '', label, unit, 'aria-label': ariaLabel }) {
   const set = v => onChange(Math.max(0, Math.round((v || 0) * 100) / 100))
   const inner = (
     <div className={'stp ' + className}>
-      <button onClick={() => set((+value || 0) - step)} aria-label="Decrease"><Icon name="minus" /></button>
+      <button onClick={() => set((+value || 0) - step)} aria-label={`Decrease ${ariaLabel || label || 'value'}`}><Icon name="minus" /></button>
       <span className="val">
-        <NumberField value={value} decimal={decimal} onChange={onChange} />
+        <NumberField value={value} decimal={decimal} onChange={onChange} aria-label={ariaLabel || label || 'Value'} />
         {unit && <i>{unit}</i>}
       </span>
-      <button onClick={() => set((+value || 0) + step)} aria-label="Increase"><Icon name="plus" /></button>
+      <button onClick={() => set((+value || 0) + step)} aria-label={`Increase ${ariaLabel || label || 'value'}`}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner
@@ -136,7 +136,7 @@ export function Stepper({ value, step = 1, onChange, decimal = true, className =
 // Pointer-driven so the fill, track and thumb are all ours — no ::-webkit-*
 // pseudo-elements, which is the only way the control looks identical on every
 // platform and can pick up the accent colour.
-export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '' }) {
+export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '', label = 'Value', unit = '' }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
   const pct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
@@ -184,6 +184,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       role="slider"
       tabIndex={0}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
+      aria-label={label} aria-valuetext={`${value}${unit ? ' ' + unit : ''}`}
       data-nodrag                                  /* keeps the sheet from swipe-dismissing */
       onKeyDown={key}
       onPointerDown={e => { e.currentTarget.setPointerCapture?.(e.pointerId); setDrag(true); onChange(posToValue(e.clientX)) }}
@@ -196,11 +197,12 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
 
 /* ============================ checkbox ============================ */
 
-export function Check({ checked, onChange, className = '', size }) {
+export function Check({ checked, onChange, className = '', size, label }) {
   return (
     <button
       role="checkbox"
       aria-checked={!!checked}
+      aria-label={label || 'Complete set'}
       className={'chk' + (checked ? ' on' : '') + ' ' + className}
       style={size ? { width: size, height: size } : null}
       onClick={() => onChange(!checked)}

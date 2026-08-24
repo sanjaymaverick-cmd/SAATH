@@ -14,3 +14,7 @@ node_modules/
 *.log
 .DS_Store
 node_modules
+
+# Local scratch — dev server logs, cloned datasets, manual QA runs
+.runtime/
+qa/

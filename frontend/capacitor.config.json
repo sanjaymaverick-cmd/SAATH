@@ -1,8 +1,8 @@
 {
-  "appId": "ch.duartesantos.opengym",
-  "appName": "openGym",
+  "appId": "com.bagriya.fitfam",
+  "appName": "Bagriya FitFam",
   "webDir": "dist",
-  "backgroundColor": "#0c0e12",
+  "backgroundColor": "#081a33",
   "android": {
     "allowMixedContent": false
   }

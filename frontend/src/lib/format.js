@@ -24,7 +24,7 @@ export function fmtDur(ms) {
 export const durPart = ms => (ms >= 60000 ? [fmtDur(ms)] : [])
 // Numbers follow the UI language, like the dates above — a hardcoded locale put Swiss
 // apostrophes ("7'535 kg") in front of every user, in every language.
-export const fmtNum = n => (Math.round(n * 10) / 10).toLocaleString(dateLocale())
+export const fmtNum = n => Number.isFinite(Number(n)) ? (Math.round(Number(n) * 10) / 10).toLocaleString(dateLocale()) : '—'
 // Volume stays in the profile's unit throughout: the old shorthand turned anything over
 // 10 000 into "t", which is wrong for a pound profile and made one list mix "18.8t" with
 // "7'535 kg" — two numbers you can't compare at a glance.
@@ -44,4 +44,4 @@ export function weekKey(d) {
 export const localTZ = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' } catch { return 'UTC' } }
 
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7)
-export const ACCENTS = { lime: '#30d158', sky: '#0a84ff', orange: '#ff9f0a', violet: '#bf5af2', pink: '#ff375f', red: '#ff453a', teal: '#40c8e0', gold: '#ffd60a' }
+export const ACCENTS = { orange: '#ff6b1a', gold: '#e6b84a', sky: '#0a84ff', lime: '#30d158', violet: '#bf5af2', pink: '#ff375f', red: '#ff453a', teal: '#40c8e0' }

@@ -1,5 +1,5 @@
 /* ============================================================================
-   openGym — design system
+   Bagriya FitFam — design system
    ----------------------------------------------------------------------------
    Rebuilt around four rules, each aimed at a specific "generated" tell in the
    previous sheet:
@@ -19,11 +19,11 @@
 /* ---------------------------------------------------------------- tokens -- */
 :root {
   /* surfaces — dark is the default */
-  --bg:        #000000;
-  --bg-el:     #0e0e10;   /* elevated backdrop (sheets, bars) */
-  --surface:   #1c1c1e;   /* card / grouped-list fill */
-  --surface-2: #2c2c2e;   /* pressed + nested fill */
-  --surface-3: #3a3a3c;   /* controls (segmented track, switch off) */
+  --bg:        #081a33;
+  --bg-el:     #0d2039;   /* elevated backdrop (sheets, bars) */
+  --surface:   #172b44;   /* card / grouped-list fill */
+  --surface-2: #223850;   /* pressed + nested fill */
+  --surface-3: #304760;   /* controls (segmented track, switch off) */
 
   /* text */
   --label:     #ffffff;
@@ -32,18 +32,18 @@
   --label-4:   rgba(235,235,245,.18);
 
   /* lines */
-  --sep:       rgba(84,84,88,.60);
-  --sep-op:    rgba(84,84,88,.34);   /* for edges sitting over blur */
+  --sep:       rgba(143,163,184,.34);
+  --sep-op:    rgba(143,163,184,.22);   /* for edges sitting over blur */
   --hair:      .5px;
 
   /* system palette (iOS dark values) */
-  --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a;
-  --yellow:#ffd60a; --teal:#40c8e0; --indigo:#5e5ce6; --pink:#ff375f;
+  --blue:#0a84ff; --green:#30d158; --red:#ff453a; --orange:#ff6b1a;
+  --yellow:#e6b84a; --teal:#40c8e0; --indigo:#5e5ce6; --pink:#ff375f;
   --purple:#bf5af2; --mint:#63e6e2; --brown:#ac8e68; --grey:#8e8e93;
 
   /* accent (per-account, synced) */
-  --acc:  var(--green);
-  --acc-2:#248a3d;
+  --acc:  var(--orange);
+  --acc-2:#c74400;
   --on-acc:#000000;
   --acc-soft: color-mix(in srgb, var(--acc) 16%, transparent);
   --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
@@ -62,11 +62,11 @@
 }
 
 :root[data-theme="light"] {
-  --bg:        #f2f2f7;
-  --bg-el:     #f7f7fa;
+  --bg:        #f4f1ea;
+  --bg-el:     #fbf8f1;
   --surface:   #ffffff;
-  --surface-2: #ececef;
-  --surface-3: #e3e3e8;
+  --surface-2: #eee8dc;
+  --surface-3: #e4ddcf;
 
   --label:     #000000;
   --label-2:   rgba(60,60,67,.60);
@@ -76,22 +76,22 @@
   --sep:       rgba(60,60,67,.29);
   --sep-op:    rgba(60,60,67,.20);
 
-  --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#ff9500;
-  --yellow:#ffcc00; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
+  --blue:#007aff; --green:#34c759; --red:#ff3b30; --orange:#e9570b;
+  --yellow:#b58624; --teal:#30b0c7; --indigo:#5856d6; --pink:#ff2d55;
   --purple:#af52de; --mint:#00c7be; --brown:#a2845e; --grey:#8e8e93;
-  --acc-2:#248a3d;
+  --acc-2:#b23c00;
   --on-acc:#ffffff;
 }
 
 /* accents — Apple's system colours, so a recolour never looks off-system */
 :root[data-accent="lime"]  { --acc:var(--green);  --acc-2:#248a3d; --on-acc:#000 }
 :root[data-accent="sky"]   { --acc:var(--blue);   --acc-2:#0060df; --on-acc:#fff }
-:root[data-accent="orange"]{ --acc:var(--orange); --acc-2:#c76b00; --on-acc:#000 }
+:root[data-accent="orange"]{ --acc:var(--orange); --acc-2:#c74400; --on-acc:#000 }
 :root[data-accent="violet"]{ --acc:var(--purple); --acc-2:#8944ab; --on-acc:#fff }
 :root[data-accent="pink"]  { --acc:var(--pink);   --acc-2:#d70036; --on-acc:#fff }
 :root[data-accent="red"]   { --acc:var(--red);    --acc-2:#d70015; --on-acc:#fff }
 :root[data-accent="teal"]  { --acc:var(--teal);   --acc-2:#0071a4; --on-acc:#000 }
-:root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000 }
+:root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#8e6616; --on-acc:#081a33 }
 /* Label colour on a filled accent button is picked per accent by measured contrast,
    not by taste. Button text is 17px/600, so the AA bar is 3:1 (large text). White on
    the light-theme green is 2.22:1 and on teal 2.57:1 — both fail, and green is the
@@ -841,6 +841,25 @@ h4.sec{
   max-width:88vw;text-align:center;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.password-field{position:relative;display:flex}
+.password-field .input{padding-right:64px;width:100%}
+.password-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:38px;padding:0 9px;color:var(--acc);font-size:13px;font-weight:600;border-radius:8px}
+.login-help{line-height:1.45;color:var(--label-2)}
+.field-label{display:block;margin:12px 2px 6px;color:var(--label-2);font-size:13px;font-weight:600}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.routine-name{background:linear-gradient(90deg,var(--surface-2),transparent);border-bottom:1px solid var(--label-4)}
+.save-state{position:fixed;right:12px;top:calc(10px + var(--sat));z-index:190;padding:6px 10px;border-radius:99px;background:var(--surface-2);color:var(--label-2);font-size:12px;box-shadow:var(--shadow-sm);transition:opacity var(--med)}
+.save-state.saved{opacity:.72}.save-state.error{color:var(--orange)}
+
+@media(max-height:640px){
+  .login-screen{justify-content:flex-start!important;min-height:0!important;padding-top:12px}
+  .login-screen>img{width:72px;height:72px}
+  #toast{top:calc(10px + var(--sat));bottom:auto;border-radius:14px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:15px;line-height:1.45}

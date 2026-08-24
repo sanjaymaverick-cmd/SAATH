@@ -136,7 +136,7 @@ describe('Workout set completion flow', () => {
     expect(mocks.startRest).not.toHaveBeenCalled()
   })
 
-  it('leaves a completed superset selected while its top-weight sheet owns the advance choice', async () => {
+  it('advances a completed superset without interrupting it with a weight sheet', async () => {
     const group = 'superset-1'
     await mount([
       exercise('superset-a', [true, true, true], { sg: group, asked: true }),
@@ -145,8 +145,8 @@ describe('Workout set completion flow', () => {
     ], 1)
     await toggleSet(5)
 
-    expect(mocks.topWeightSheet).toHaveBeenCalledWith(1)
-    expect(mocks.S.active.cur).toBe(1)
+    expect(mocks.topWeightSheet).not.toHaveBeenCalled()
+    expect(mocks.S.active.cur).toBe(2)
     expect(mocks.startRest).toHaveBeenCalledWith(90)
   })
 })

@@ -1,4 +1,4 @@
-/* opengym-api — passkey (WebAuthn) auth + per-user state storage for openGym
+/* Bagriya FitFam API — password auth + per-user state storage
    No framework, JSON-file storage, signed session cookies.               */
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -9,12 +9,14 @@ import {
   generateAuthenticationOptions, verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import webpush from 'web-push';
+import { generateTemporaryPassword, hashPassword, normalizeLogin, validateLogin, validatePassword, verifyPassword } from './auth.js';
+import { adherenceSummary } from './adherence.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
 const RP_ID = process.env.RP_ID || 'localhost';
 const ORIGIN = process.env.ORIGIN || 'http://localhost:8080';
-const RP_NAME = process.env.RP_NAME || 'openGym';
+const RP_NAME = process.env.RP_NAME || 'Bagriya FitFam';
 // Admin dashboard (issue): admins are matched by uid; INVITE_ONLY gates new signups behind a
 // code the admin generates. Both default off so a fresh self-hosted instance stays open.
 const ADMIN_UIDS = (process.env.ADMIN_UIDS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -23,7 +25,7 @@ const INVITE_ONLY = /^(1|true|yes|on)$/i.test(process.env.INVITE_ONLY || '');
 // server — but on an instance meant for a known set of people, an entrance nobody can walk back
 // out of is still the wrong front door (#42). Default ON, so existing instances are unchanged;
 // the polarity is inverted from INVITE_ONLY because the safe default here is the permissive one.
-const ALLOW_GUEST = !/^(0|false|no|off)$/i.test(process.env.ALLOW_GUEST || '');
+const ALLOW_GUEST = /^(1|true|yes|on)$/i.test(process.env.ALLOW_GUEST || '');
 // 90 days keeps someone who trains a few times a week permanently signed in without a stolen
 // cookie staying good for a year. Overridable because a family instance and one on the open
 // internet don't want the same number. Only affects cookies minted from now on — the expiry is
@@ -46,6 +48,10 @@ try { db = JSON.parse(fs.readFileSync(dbFile, 'utf8')); } catch {}
 db.subs = db.subs || [];
 db.invites = db.invites || [];
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
+const publicUser = user => ({
+  id: user.id, name: user.name, login: user.login || null,
+  admin: isAdmin(user), mustChangePassword: !!user.mustChangePassword
+});
 function saveDb() { atomicWrite(dbFile, JSON.stringify(db, null, 2)); }
 function atomicWrite(file, content) {
   const tmp = file + '.tmp';
@@ -222,6 +228,30 @@ function takeChallenge(cid) {
 }
 setInterval(() => { for (const [k, v] of challenges) if (v.exp < Date.now()) challenges.delete(k); }, 60000).unref();
 
+/* ---------- password login throttling ---------- */
+const loginAttempts = new Map();
+const LOGIN_WINDOW = 15 * 60000;
+const LOGIN_LOCK = 15 * 60000;
+const LOGIN_MAX_FAILURES = 5;
+function loginAttemptKey(req, login) {
+  return `${normalizeLogin(login)}:${req.socket.remoteAddress || 'unknown'}`;
+}
+function loginBlocked(key) {
+  const row = loginAttempts.get(key);
+  if (!row) return false;
+  if (row.lockedUntil > Date.now()) return true;
+  if (Date.now() - row.startedAt > LOGIN_WINDOW) loginAttempts.delete(key);
+  return false;
+}
+function loginFailed(key) {
+  const now = Date.now();
+  let row = loginAttempts.get(key);
+  if (!row || now - row.startedAt > LOGIN_WINDOW) row = { count: 0, startedAt: now, lockedUntil: 0 };
+  row.count += 1;
+  if (row.count >= LOGIN_MAX_FAILURES) row.lockedUntil = now + LOGIN_LOCK;
+  loginAttempts.set(key, row);
+}
+
 /* ---------- helpers ---------- */
 function json(res, code, obj, extraHeaders) {
   const body = JSON.stringify(obj);
@@ -354,15 +384,52 @@ const routes = {
   'GET /api/health': async (req, res) => json(res, 200, { ok: true, users: db.users.length }),
 
   // Public config the login screen needs before anyone is signed in.
-  'GET /api/config': async (req, res) => json(res, 200, { invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST }),
+  'GET /api/config': async (req, res) => json(res, 200, { auth: 'password', allow_guest: ALLOW_GUEST }),
 
   'GET /api/me': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } });
+    json(res, 200, { user: publicUser(user) });
+  },
+
+  'POST /api/login': async (req, res) => {
+    const body = await readBody(req);
+    const login = normalizeLogin(body.login);
+    const key = loginAttemptKey(req, login);
+    if (loginBlocked(key)) return json(res, 429, { error: 'too many attempts — try again in 15 minutes' });
+    const user = db.users.find(candidate => candidate.login === login);
+    const valid = user && !user.disabled && await verifyPassword(body.password, user.password);
+    if (!valid) {
+      loginFailed(key);
+      audit(req, 'auth.login.fail', { ok: false, user, name: login, msg: user?.disabled ? 'account-disabled' : 'invalid-credentials' });
+      return json(res, 401, { error: 'invalid login ID or password' });
+    }
+    loginAttempts.delete(key);
+    audit(req, 'auth.login.ok', { user });
+    json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
+  },
+
+  'POST /api/password/change': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (!user.mustChangePassword && !(await verifyPassword(body.currentPassword, user.password))) {
+      return json(res, 401, { error: 'current password is incorrect' });
+    }
+    let next;
+    try { next = validatePassword(body.newPassword); }
+    catch (error) { return json(res, 400, { error: error.message }); }
+    user.password = await hashPassword(next);
+    user.mustChangePassword = false;
+    user.sv = sessionVersion(user) + 1;
+    saveDb();
+    audit(req, 'auth.password.change', { user });
+    json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
 
   'POST /api/register/options': async (req, res) => {
+    return json(res, 404, { error: 'accounts are created by the family administrator' });
+    /* Legacy passkey registration retained below for data-format compatibility. */
     const body = await readBody(req);
     const name = String(body.name || '').trim().slice(0, 40);
     if (!name) return json(res, 400, { error: 'name required' });
@@ -385,6 +452,7 @@ const routes = {
   },
 
   'POST /api/register/verify': async (req, res) => {
+    return json(res, 404, { error: 'accounts are created by the family administrator' });
     const body = await readBody(req);
     const c = takeChallenge(body.cid);
     if (!c || !c.uid) {
@@ -438,6 +506,7 @@ const routes = {
   },
 
   'POST /api/login/options': async (req, res) => {
+    return json(res, 404, { error: 'password login is enabled' });
     const options = await generateAuthenticationOptions({
       rpID: RP_ID, userVerification: 'preferred', allowCredentials: []
     });
@@ -446,6 +515,7 @@ const routes = {
   },
 
   'POST /api/login/verify': async (req, res) => {
+    return json(res, 404, { error: 'password login is enabled' });
     const body = await readBody(req);
     const c = takeChallenge(body.cid);
     if (!c) {
@@ -564,7 +634,7 @@ const routes = {
   'POST /api/push/test': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
-    await sendPush(user.id, { title: 'openGym', body: 'Test notification ✅ — this is what alerts look like.', tag: 'test' });
+    await sendPush(user.id, { title: 'Bagriya FitFam', body: 'Test notification ✅ — this is what alerts look like.', tag: 'test' });
     json(res, 200, { ok: true });
   },
 
@@ -603,6 +673,41 @@ const routes = {
   },
 
   /* ---------- admin dashboard ---------- */
+  'POST /api/admin/users/create': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const name = String(body.name || '').trim().slice(0, 40);
+    if (!name) return json(res, 400, { error: 'member name is required' });
+    let login;
+    try { login = validateLogin(body.login); }
+    catch (error) { return json(res, 400, { error: error.message }); }
+    if (db.users.some(user => user.login === login)) return json(res, 409, { error: 'that login ID is already in use' });
+    const temporaryPassword = generateTemporaryPassword();
+    const user = {
+      id: crypto.randomBytes(12).toString('base64url'), name, login,
+      password: await hashPassword(temporaryPassword), mustChangePassword: true,
+      created: new Date().toISOString(), createdBy: admin.id, sv: 0
+    };
+    db.users.push(user);
+    saveDb();
+    audit(req, 'admin.user.create', { user: admin, target: user });
+    json(res, 201, { user: publicUser(user), temporaryPassword });
+  },
+
+  'POST /api/admin/users/reset-password': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const user = db.users.find(candidate => candidate.id === body.id);
+    if (!user) return json(res, 404, { error: 'no such user' });
+    const temporaryPassword = generateTemporaryPassword();
+    user.password = await hashPassword(temporaryPassword);
+    user.mustChangePassword = true;
+    user.sv = sessionVersion(user) + 1;
+    saveDb();
+    audit(req, 'admin.user.password-reset', { user: admin, target: user });
+    json(res, 200, { user: publicUser(user), temporaryPassword });
+  },
+
   // One row per user, cheap enough for a personal instance (reads each state file once).
   'GET /api/admin/users': async (req, res) => {
     if (!requireAdmin(req, res)) return;
@@ -610,14 +715,16 @@ const routes = {
       const S = readState(u.id) || {};
       const workouts = S.workouts || [];
       const last = workouts[workouts.length - 1];
+      const adherence = adherenceSummary(S);
       return {
-        id: u.id, name: u.name, created: u.created || null,
+        id: u.id, name: u.name, login: u.login || null, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null,
+        mustChangePassword: !!u.mustChangePassword,
         workouts: workouts.length,
         lastWorkout: last ? last.d : null,
         lastSync: S._ts || null,
         hasPush: db.subs.some(s => s.userId === u.id),
-        live: livePresence(u.id)
+        live: livePresence(u.id), adherence
       };
     });
     json(res, 200, { users, invite_only: INVITE_ONLY, now: Date.now() });
@@ -631,12 +738,13 @@ const routes = {
     if (!u) return json(res, 404, { error: 'no such user' });
     const S = readState(u.id) || {};
     json(res, 200, {
-      user: { id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null },
+      user: { id: u.id, name: u.name, login: u.login || null, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), invitedBy: u.invitedBy || null, mustChangePassword: !!u.mustChangePassword },
       unit: S.unit || 'kg',
       lastSync: S._ts || null,
       routines: (S.routines || []).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: (r.ex || []).length })),
       bodyweight: S.bodyweight || [],
-      workouts: (S.workouts || []).slice().reverse()   // newest first for display
+      workouts: (S.workouts || []).slice().reverse(),   // newest first for display
+      adherence: adherenceSummary(S)
     });
   },
 
