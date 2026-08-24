@@ -1,0 +1,7 @@
+[Unit]
+Description=Backup Bagriya FitFam data directory
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/bagriya-fitfam/backup.sh

@@ -22,6 +22,14 @@ sudo rm -rf "$RELEASE/data" "$RELEASE/media"
 sudo ln -s "$APP_ROOT/data" "$RELEASE/data"
 sudo ln -s "$APP_ROOT/media" "$RELEASE/media"
 
+# Daily backups of the data directory (accounts, password hashes, workout history,
+# session secret) — reinstalled on every deploy so a rebuilt server keeps them too.
+sudo install -m 755 -o root -g root "$RELEASE/deploy/backup-data.sh" "$APP_ROOT/backup.sh"
+sudo install -m 644 -o root -g root "$RELEASE/deploy/backup-data.service" /etc/systemd/system/backup-data.service
+sudo install -m 644 -o root -g root "$RELEASE/deploy/backup-data.timer" /etc/systemd/system/backup-data.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now backup-data.timer
+
 ORIGIN="http://$PUBLIC_HOST"
 sudo tee "$RELEASE/.env" >/dev/null <<EOF
 ORIGIN=$ORIGIN
