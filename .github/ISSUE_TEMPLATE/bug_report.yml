@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in openGym is broken or not working as expected
+description: Something in SAATH is broken or not working as expected
 labels: ["bug"]
 body:
   - type: textarea
@@ -32,7 +32,7 @@ body:
   - type: dropdown
     id: setup
     attributes:
-      label: How are you running openGym?
+      label: How are you running SAATH?
       options:
         - Self-hosted (docker compose)
         - Frontend dev server (npm run dev)
@@ -49,12 +49,12 @@ body:
       required: true
 
   - type: checkboxes
-    id: passkey
+    id: login
     attributes:
-      label: Is this about login / passkeys?
+      label: Is this about login?
       description: >
         Most login issues are an `RP_ID`/`ORIGIN` mismatch — check your `.env` against the
-        domain you're accessing openGym from before reporting. See the
+        domain you're accessing SAATH from before reporting. See the
         [self-hosting guide](../../docs/SELF_HOSTING.md).
       options:
-        - label: Yes, this is a login/passkey issue and I've already checked RP_ID/ORIGIN
+        - label: Yes, this is a login issue and I've already checked RP_ID/ORIGIN

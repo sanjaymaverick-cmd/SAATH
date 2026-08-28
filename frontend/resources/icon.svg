@@ -1,9 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">Bagriya FitFam</title>
-  <desc id="desc">An interlocking BF monogram representing family, movement, and strength.</desc>
-  <rect width="512" height="512" rx="112" fill="#081A33"/>
-  <path fill="#FF6B1A" d="M92 92h214c72 0 122 44 122 108 0 35-15 63-43 82 34 20 53 52 53 91 0 75-55 123-137 123H92V92zm72 58v104h132c40 0 64-19 64-52 0-34-24-52-64-52H164zm0 162v126h137c44 0 69-23 69-63s-25-63-69-63H164z"/>
-  <path fill="#E6B84A" d="M204 198h169v58H262v70c0 67-35 112-99 126l-15-55c37-10 56-31 56-71V198z"/>
-  <circle cx="178" cy="176" r="27" fill="#E6B84A"/>
-  <circle cx="136" cy="221" r="18" fill="#FF6B1A"/>
+  <title id="title">SAATH</title>
+  <desc id="desc">Two connected paths forming an S, representing a coach and client progressing together.</desc>
+  <defs>
+    <linearGradient id="bg" x1="52" y1="28" x2="460" y2="484" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102D4F"/>
+      <stop offset="1" stop-color="#071525"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="112" y1="112" x2="404" y2="406" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7A3D"/>
+      <stop offset=".48" stop-color="#FF4F67"/>
+      <stop offset="1" stop-color="#7B61FF"/>
+    </linearGradient>
+    <linearGradient id="link" x1="140" y1="396" x2="384" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#53E0C1"/>
+      <stop offset="1" stop-color="#B9F86A"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#020A12" flood-opacity=".42"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <circle cx="418" cy="92" r="86" fill="#53E0C1" opacity=".055"/>
+  <circle cx="82" cy="422" r="108" fill="#FF5B4F" opacity=".055"/>
+  <g filter="url(#shadow)">
+    <path d="M362 117H217c-66 0-108 34-108 86 0 51 40 81 104 81h86c28 0 45 11 45 31 0 21-18 33-48 33H149" fill="none" stroke="url(#ribbon)" stroke-width="64" stroke-linecap="round"/>
+    <path d="M150 395h145c66 0 108-34 108-86 0-51-40-81-104-81h-86c-28 0-45-11-45-31 0-21 18-33 48-33h147" fill="none" stroke="url(#link)" stroke-width="34" stroke-linecap="round"/>
+  </g>
+  <circle cx="369" cy="117" r="19" fill="#FFF"/>
+  <circle cx="143" cy="395" r="19" fill="#FFF"/>
 </svg>

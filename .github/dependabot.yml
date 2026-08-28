@@ -1,6 +1,6 @@
 # Dependency updates, deliberately quiet.
 #
-# openGym is dependency-light on purpose: the frontend is React + Router + Zustand, and api/
+# SAATH is dependency-light on purpose: the frontend is React + Router + Zustand, and api/
 # has two runtime dependencies. A default Dependabot setup would still open a PR per package
 # per week, which on a solo project means the alerts stop being read — the opposite of what
 # this is for. So: monthly, everything in an ecosystem grouped into a single PR, and a low
@@ -52,8 +52,8 @@ updates:
       api:
         patterns: ['*']
         update-types: ['minor', 'patch']
-      # Two dependencies, but one of them verifies passkeys — a major there is worth reading on
-      # its own rather than alongside anything else.
+      # Keep backend majors separate; auth, sessions, and notifications are worth reviewing on
+      # their own rather than alongside anything else.
       api-major:
         patterns: ['*']
         update-types: ['major']
@@ -95,7 +95,7 @@ updates:
         patterns: ['*']
         update-types: ['minor', 'patch']
       # Action majors are usually a runner or Node-version change and usually harmless — but
-      # these workflows publish the ghcr images and deploy the live demo, so the blast radius
+      # these workflows publish container images, so the blast radius
       # is real. Separate PR, so a failure has an obvious cause.
       actions-major:
         patterns: ['*']

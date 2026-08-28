@@ -24,5 +24,4 @@ db.users.push({
 const tmp = dbFile + '.tmp'
 fs.writeFileSync(tmp, JSON.stringify(db, null, 2), { mode: 0o600 })
 fs.renameSync(tmp, dbFile)
-console.log(`Bagriya FitFam administrator created\nLogin ID: ${login}\nTemporary password: ${temporaryPassword}\nChange it on first sign-in.`)
-
+console.log(`SAATH administrator created\nLogin ID: ${login}\nTemporary password: ${temporaryPassword}\nChange it on first sign-in.`)

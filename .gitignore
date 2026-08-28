@@ -1,20 +1,50 @@
-# Exercise media — fetched on first `docker compose up` (or via scripts/fetch-media.sh)
+# Dependencies and generated builds
+node_modules/
+frontend/dist/
+frontend/icons/
+dist/
+build/
+frontend/android/.gradle/
+frontend/android/**/build/
+*.apk
+*.aab
+
+# Local toolchains
+.jdk/
+
+# Secrets and local environment (keep the documented template)
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*.cer
+*.crt
+
+# Runtime and private family data
+data/
+runtime/
+.runtime/
+exports/
+backups/
+backup/
+audit.log
+secrets/
+
+# Downloaded exercise media
 media/img/
 media/gif/
 
-# Runtime data — users, passkeys, per-user state, session secret
-data/
-
-# Local config
-.env
-
-# Build output / deps
-frontend/dist/
-node_modules/
+# Temporary and local QA files
 *.log
-.DS_Store
-node_modules
-
-# Local scratch — dev server logs, cloned datasets, manual QA runs
-.runtime/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.orig
 qa/
+.DS_Store

@@ -1,4 +1,4 @@
-# Bagriya FitFam QA remediation
+# SAATH QA remediation
 
 Implemented after three independent 30-day QA journeys on 24 August 2026.
 
@@ -35,5 +35,5 @@ Implemented after three independent 30-day QA journeys on 24 August 2026.
 ## Optional later enhancements
 
 - Self-host a small licensed Lottie asset for workout-complete and 7/30-day milestones.
-- Prototype a lazy-loaded, static-fallback 3D FitFam emblem only for major celebrations.
+- Prototype a lazy-loaded, static-fallback SAATH emblem only for major celebrations.
 - Code-split large translated exercise-instruction bundles before the Oracle deployment.

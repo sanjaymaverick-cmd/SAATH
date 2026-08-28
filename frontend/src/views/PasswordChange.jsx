@@ -26,7 +26,7 @@ export default function PasswordChange() {
   }
 
   return <div className="narrow" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh' }}>
-    <img src="icon-180.png" alt="" width="82" height="82" style={{ alignSelf: 'center', borderRadius: 20 }} />
+    <img src="icons/icon-192.webp" alt="" width="82" height="82" style={{ alignSelf: 'center', borderRadius: 20 }} />
     <h1 style={{ textAlign: 'center', margin: '16px 0 6px' }}>Welcome, {user?.name}</h1>
     <p className="muted" style={{ textAlign: 'center', marginBottom: 26 }}>Choose your private password to continue.</p>
     <form onSubmit={save} style={{ display: 'grid', gap: 12 }}>

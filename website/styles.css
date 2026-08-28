@@ -1,4 +1,4 @@
-/* openGym project site — matches the app: dark, lime accent, cards, system font. */
+/* SAATH project site — matches the app: dark, lime accent, cards, system font. */
 :root {
   --bg: #0c0e12; --card: #16181d; --card2: #1c1f26; --line: #23262d;
   --fg: #f2f2f7; --dim: #8e8e93; --faint: #6e6e73;
@@ -80,7 +80,7 @@ h2 { font-size: clamp(26px, 4.5vw, 34px); letter-spacing: -.02em; margin: 6px 0 
 }
 .shots figcaption { color: var(--faint); font-size: 13px; margin-top: 8px; }
 
-/* ---------- embedded live demo ---------- */
+/* ---------- embedded content (legacy, currently unused) ---------- */
 .demo-wrap { display: flex; justify-content: center; padding: 10px 0 6px; }
 .phone {
   width: 384px; max-width: 92vw; height: min(720px, 78vh); border-radius: 42px;
@@ -179,8 +179,7 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 1.2rem
   table.cfg tr:first-child td:first-child { border-top: 0; }
 }
 
-/* ---------- suspension notice (GitHub account suspended → gitea.com mirror) ----------
-   Temporary: remove this block together with the .alert markup once the account is back. */
+/* ---------- legacy alert styling (currently unused) ---------- */
 .alert {
   background:
     radial-gradient(1200px 260px at 50% -40px, rgba(255, 159, 10, .18), transparent 70%),
@@ -211,7 +210,7 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 1.2rem
 .alert .alert-note { color: #a9977f; font-size: 14px; margin-top: 18px; }
 .alert code { background: rgba(255, 159, 10, .12); color: #ffc978; }
 
-/* offline live demo */
+/* offline content */
 .offline {
   background: var(--card); border: 1px dashed var(--line); border-radius: 18px;
   padding: 34px 26px; text-align: center; margin-top: 22px;
@@ -219,9 +218,7 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 1.2rem
 .offline .big { font-size: 34px; display: block; margin-bottom: 10px; }
 .offline p { color: var(--dim); max-width: 620px; margin: 0 auto 6px; }
 
-/* ---------- Discord call-to-action ----------
-   Blurple rather than the lime accent on purpose: this block has to read as a
-   different kind of thing from the download/demo buttons around it. */
+/* ---------- legacy call-to-action styling (currently unused) ---------- */
 .dc-wrap { padding: 8px 0 46px; }
 .dc {
   display: flex; align-items: center; gap: 26px;
@@ -237,8 +234,7 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 1.2rem
   flex: 0 0 76px; width: 76px; height: 76px; border-radius: 20px;
   background: #5865f2; display: flex; align-items: center; justify-content: center;
 }
-/* The Discord mark is 71:55, not square — forcing it into a square box
-   letterboxes it and it reads as vertically off-centre. */
+/* Legacy icon sizing. */
 .dc-icon svg { width: 44px; height: 34px; fill: #fff; display: block; }
 .dc-body { flex: 1 1 auto; min-width: 0; }
 .dc h3 { font-size: clamp(19px, 3vw, 23px); letter-spacing: -.02em; margin-bottom: 6px; }
@@ -253,7 +249,7 @@ table.cfg td:first-child { white-space: nowrap; width: 1%; padding-right: 1.2rem
   .dc .btn { width: 100%; text-align: center; }
 }
 
-/* Discord button inside the suspended-account banner */
+/* Legacy alert action buttons. */
 .alert .alert-actions {
   display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; align-items: stretch;
 }

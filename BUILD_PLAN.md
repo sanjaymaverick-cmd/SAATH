@@ -1,6 +1,6 @@
-# Bagriya FitFam build plan
+# SAATH rebrand build plan
 
-- [x] Fork the v1.2.9 baseline into the `bagriya-fitfam` branch.
+- [x] Preserve the v1.2.9 baseline and existing workout functionality on the rebrand branch.
 - [x] Establish the logo, PWA/native assets, and navy/orange/gold design system.
 - [x] Add admin-managed login IDs, generated temporary passwords, forced password changes,
       session revocation, account disabling, and throttled password login.

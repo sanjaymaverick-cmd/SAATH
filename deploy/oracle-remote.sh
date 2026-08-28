@@ -5,7 +5,8 @@ ARCHIVE="${1:?archive path required}"
 PUBLIC_HOST="${2:?public IP or domain required}"
 ADMIN_LOGIN="${3:-owner}"
 ADMIN_NAME="${4:-Family Admin}"
-APP_ROOT=/opt/bagriya-fitfam
+DOMAIN="${5:-}"
+APP_ROOT=/opt/saath
 RELEASE_ID="$(date -u +%Y%m%d%H%M%S)"
 RELEASE="$APP_ROOT/releases/$RELEASE_ID"
 
@@ -30,11 +31,31 @@ sudo install -m 644 -o root -g root "$RELEASE/deploy/backup-data.timer" /etc/sys
 sudo systemctl daemon-reload
 sudo systemctl enable --now backup-data.timer
 
-ORIGIN="http://$PUBLIC_HOST"
-sudo tee "$RELEASE/.env" >/dev/null <<EOF
+if [ -n "$DOMAIN" ]; then
+  ORIGIN="https://$DOMAIN"
+  RP_ID="$DOMAIN"
+  COMPOSE_ARGS=(--profile https)
+  sudo tee "$RELEASE/.env" >/dev/null <<EOF
+DOMAIN=$DOMAIN
+ORIGIN=$ORIGIN
+RP_ID=$RP_ID
+RP_NAME=SAATH
+ALLOW_GUEST=0
+INVITE_ONLY=0
+SESSION_DAYS=90
+PORT=3000
+WEB_BIND=127.0.0.1:
+WEB_PORT=8080
+NGINX_PORT=80
+VAPID_SUBJECT=mailto:admin@localhost
+EOF
+else
+  ORIGIN="http://$PUBLIC_HOST"
+  COMPOSE_ARGS=()
+  sudo tee "$RELEASE/.env" >/dev/null <<EOF
 ORIGIN=$ORIGIN
 RP_ID=$PUBLIC_HOST
-RP_NAME=Bagriya FitFam
+RP_NAME=SAATH
 ALLOW_GUEST=0
 INVITE_ONLY=0
 SESSION_DAYS=90
@@ -43,9 +64,10 @@ WEB_PORT=80
 NGINX_PORT=80
 VAPID_SUBJECT=mailto:admin@localhost
 EOF
+fi
 
 cd "$RELEASE"
-sudo docker compose build
+sudo docker compose "${COMPOSE_ARGS[@]}" build
 
 # Bootstrap only a genuinely fresh server. The command prints the temporary password once.
 if [ ! -s "$APP_ROOT/data/db.json" ]; then
@@ -57,7 +79,7 @@ if [ ! -s "$APP_ROOT/data/db.json" ]; then
 fi
 
 sudo ln -sfn "$RELEASE" "$APP_ROOT/current"
-sudo docker compose up -d --remove-orphans
+sudo docker compose "${COMPOSE_ARGS[@]}" up -d --remove-orphans
 
 if command -v ufw >/dev/null 2>&1; then
   sudo ufw allow OpenSSH >/dev/null || true
@@ -65,10 +87,18 @@ if command -v ufw >/dev/null 2>&1; then
   sudo ufw allow 443/tcp >/dev/null || true
 fi
 
+# The web container always answers on its own port (loopback-only once a domain/Caddy
+# is in front) — check that directly rather than through Caddy, since a fresh cert
+# issuance can take a few seconds and shouldn't fail the deploy.
+HEALTH_PORT=$([ -n "$DOMAIN" ] && echo 8080 || echo 80)
 for attempt in $(seq 1 60); do
-  if curl -fsS http://127.0.0.1/api/health >/tmp/fitfam-health.json; then
-    echo "Bagriya FitFam is healthy: $(cat /tmp/fitfam-health.json)"
-    echo "Open: http://$PUBLIC_HOST"
+  if curl -fsS "http://127.0.0.1:$HEALTH_PORT/api/health" >/tmp/saath-health.json; then
+    echo "SAATH is healthy: $(cat /tmp/saath-health.json)"
+    if [ -n "$DOMAIN" ]; then
+      echo "Open: https://$DOMAIN (certificate issuance can take up to a minute on first boot)"
+    else
+      echo "Open: http://$PUBLIC_HOST"
+    fi
     exit 0
   fi
   sleep 2

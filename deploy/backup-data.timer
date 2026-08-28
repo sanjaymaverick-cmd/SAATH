@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily backup of the Bagriya FitFam data directory
+Description=Daily backup of the SAATH data directory
 
 [Timer]
 OnCalendar=*-*-* 03:15:00 UTC

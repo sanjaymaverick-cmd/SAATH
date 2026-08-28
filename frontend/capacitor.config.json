@@ -1,8 +1,8 @@
 {
-  "appId": "com.bagriya.fitfam",
-  "appName": "Bagriya FitFam",
+  "appId": "com.bagriya.saath",
+  "appName": "SAATH",
   "webDir": "dist",
-  "backgroundColor": "#081a33",
+  "backgroundColor": "#071525",
   "android": {
     "allowMixedContent": false
   }

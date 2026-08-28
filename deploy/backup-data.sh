@@ -4,7 +4,7 @@
 # Installed on the server as a systemd timer — see backup-data.service/.timer.
 set -euo pipefail
 
-APP_ROOT=/opt/bagriya-fitfam
+APP_ROOT=/opt/saath
 DATA_DIR="$APP_ROOT/data"
 BACKUP_DIR="$APP_ROOT/backups"
 KEEP_DAYS="${BACKUP_KEEP_DAYS:-30}"

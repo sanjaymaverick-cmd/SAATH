@@ -6,7 +6,11 @@ param(
   [string]$HostName = '130.210.24.150',
   [string]$SshUser = 'ubuntu',
   [string]$AdminLogin = 'owner',
-  [string]$AdminName = 'Family Admin'
+  [string]$AdminName = 'Family Admin',
+  # DNS for this hostname must already point at $HostName. When set, the app is
+  # served over HTTPS on that domain via the bundled Caddy service (automatic
+  # Let's Encrypt certificate); when omitted, plain HTTP on $HostName as before.
+  [string]$Domain = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,12 +25,12 @@ foreach ($command in 'tar.exe', 'ssh.exe', 'scp.exe') {
 }
 
 $Stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$TempRoot = Join-Path ([IO.Path]::GetTempPath()) "fitfam-deploy-$Stamp"
-$Archive = Join-Path $TempRoot 'bagriya-fitfam.tar.gz'
+$TempRoot = Join-Path ([IO.Path]::GetTempPath()) "saath-deploy-$Stamp"
+$Archive = Join-Path $TempRoot 'saath.tar.gz'
 New-Item -ItemType Directory -Force -Path $TempRoot | Out-Null
 
 try {
-  Write-Host 'Packaging Bagriya FitFam source…' -ForegroundColor Cyan
+  Write-Host 'Packaging SAATH source...' -ForegroundColor Cyan
   & tar.exe -czf $Archive `
     --exclude='.git' `
     --exclude='.runtime' `
@@ -40,10 +44,10 @@ try {
   if ($LASTEXITCODE -ne 0) { throw 'Packaging failed.' }
 
   $Target = "$SshUser@$HostName"
-  $RemoteArchive = "/tmp/bagriya-fitfam-$Stamp.tar.gz"
-  $RemoteScript = "/tmp/bagriya-fitfam-deploy-$Stamp.sh"
+  $RemoteArchive = "/tmp/saath-$Stamp.tar.gz"
+  $RemoteScript = "/tmp/saath-deploy-$Stamp.sh"
 
-  Write-Host "Uploading to $Target…" -ForegroundColor Cyan
+  Write-Host "Uploading to $Target..." -ForegroundColor Cyan
   & scp.exe -i $KeyPath -o StrictHostKeyChecking=accept-new $Archive "${Target}:$RemoteArchive"
   if ($LASTEXITCODE -ne 0) { throw 'Application upload failed.' }
   & scp.exe -i $KeyPath -o StrictHostKeyChecking=accept-new $RemoteHelper "${Target}:$RemoteScript"
@@ -52,20 +56,26 @@ try {
   $SafeHost = $HostName.Replace("'", "''")
   $SafeLogin = $AdminLogin.Replace("'", "''")
   $SafeName = $AdminName.Replace("'", "''")
-  $RemoteCommand = "chmod +x '$RemoteScript' && '$RemoteScript' '$RemoteArchive' '$SafeHost' '$SafeLogin' '$SafeName'; code=`$?; rm -f '$RemoteArchive' '$RemoteScript'; exit `$code"
+  $SafeDomain = $Domain.Replace("'", "''")
+  $RemoteCommand = "chmod +x '$RemoteScript' && '$RemoteScript' '$RemoteArchive' '$SafeHost' '$SafeLogin' '$SafeName' '$SafeDomain'; code=`$?; rm -f '$RemoteArchive' '$RemoteScript'; exit `$code"
 
-  Write-Host 'Installing and starting the application…' -ForegroundColor Cyan
+  Write-Host 'Installing and starting the application...' -ForegroundColor Cyan
   & ssh.exe -tt -i $KeyPath -o StrictHostKeyChecking=accept-new $Target $RemoteCommand
   if ($LASTEXITCODE -ne 0) { throw 'Remote deployment failed. Review the output above.' }
 
-  Write-Host "Checking http://$HostName/api/health from this computer…" -ForegroundColor Cyan
+  $PublicUrl = if ($Domain) { "https://$Domain" } else { "http://$HostName" }
+  Write-Host "Checking $PublicUrl/api/health from this computer..." -ForegroundColor Cyan
   try {
-    $Health = Invoke-RestMethod -Uri "http://$HostName/api/health" -TimeoutSec 20
-    Write-Host "Deployment complete — http://$HostName" -ForegroundColor Green
+    $Health = Invoke-RestMethod -Uri "$PublicUrl/api/health" -TimeoutSec 20
+    Write-Host "Deployment complete - $PublicUrl" -ForegroundColor Green
     $Health | ConvertTo-Json -Compress | Write-Host
   } catch {
-    Write-Warning "The server is healthy internally, but the public check failed. In Oracle Cloud, allow inbound TCP 80 (and later 443) in the subnet Security List or NSG."
-    Write-Host "Try opening: http://$HostName"
+    if ($Domain) {
+      Write-Warning "The server is healthy internally, but the public HTTPS check failed. A fresh Let's Encrypt certificate can take up to a minute - try again shortly. Also confirm TCP 80 and 443 are open in the Oracle Cloud Security List/NSG, and that $Domain's DNS points at $HostName."
+    } else {
+      Write-Warning "The server is healthy internally, but the public check failed. In Oracle Cloud, allow inbound TCP 80 (and later 443) in the subnet Security List or NSG."
+    }
+    Write-Host "Try opening: $PublicUrl"
   }
 } finally {
   if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }

@@ -1,5 +1,5 @@
 /* ============================================================================
-   Bagriya FitFam — design system
+   SAATH — design system
    ----------------------------------------------------------------------------
    Rebuilt around four rules, each aimed at a specific "generated" tell in the
    previous sheet:
@@ -844,7 +844,59 @@ h4.sec{
 .password-field{position:relative;display:flex}
 .password-field .input{padding-right:64px;width:100%}
 .password-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:38px;padding:0 9px;color:var(--acc);font-size:13px;font-weight:600;border-radius:8px}
-.login-help{line-height:1.45;color:var(--label-2)}
+.login-screen{
+  isolation:isolate;position:relative;justify-content:flex-start!important;
+  min-height:calc(100vh - var(--sat) - 32px)!important;padding:clamp(18px,5vh,54px) 0 24px;
+}
+.login-screen::before,.login-screen::after{
+  content:"";position:fixed;z-index:-2;border-radius:50%;filter:blur(3px);pointer-events:none;
+}
+.login-screen::before{
+  width:340px;height:340px;left:-190px;top:-130px;
+  background:radial-gradient(circle at 68% 68%,rgba(83,224,193,.18),rgba(83,224,193,0) 68%);
+}
+.login-screen::after{
+  width:420px;height:420px;right:-250px;bottom:-170px;
+  background:radial-gradient(circle at 30% 28%,rgba(255,79,103,.17),rgba(123,97,255,.07) 40%,transparent 70%);
+}
+.login-brand{position:relative;text-align:center;margin-bottom:26px;width:100%}
+.login-mark{
+  position:relative;z-index:1;display:block;margin:0 auto 18px;border-radius:28px;
+  filter:drop-shadow(0 20px 28px rgba(1,8,16,.34));
+  animation:brand-arrive 700ms var(--ease) both;
+}
+.login-orbit{position:absolute;left:50%;top:56px;border:1px solid var(--label-4);border-radius:50%;pointer-events:none}
+.login-orbit::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 18px color-mix(in srgb,var(--acc) 70%,transparent)}
+.login-orbit-a{width:166px;height:58px;transform:translate(-50%,-50%) rotate(-9deg)}
+.login-orbit-a::after{right:18px;top:2px}
+.login-orbit-b{width:142px;height:142px;transform:translate(-50%,-50%) rotate(41deg);border-color:color-mix(in srgb,var(--teal) 25%,transparent)}
+.login-orbit-b::after{left:4px;bottom:30px;background:var(--teal)}
+.login-kicker{color:var(--teal);font-size:10px;font-weight:700;letter-spacing:.2em;margin-bottom:8px}
+.login-brand h1{
+  font-size:42px;line-height:1;font-weight:800;letter-spacing:.18em;text-indent:.18em;
+  background:linear-gradient(110deg,#fff 18%,#cfe8ec 52%,#fff 82%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.login-brand p{color:var(--label-2);font-size:15px;margin-top:8px;letter-spacing:.015em}
+.login-card{
+  width:100%;display:grid;gap:8px;text-align:left;padding:20px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--surface) 91%,#fff 9%),color-mix(in srgb,var(--surface) 97%,transparent));
+  border:1px solid color-mix(in srgb,var(--label) 10%,transparent);border-radius:24px;
+  box-shadow:0 24px 70px rgba(1,8,16,.22),inset 0 1px 0 rgba(255,255,255,.045);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+.login-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.login-card-head div{display:flex;flex-direction:column;gap:2px}
+.login-card-head span{font-size:12px;color:var(--label-2)}
+.login-card-head strong{font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.02em}
+.login-card .field-label{margin:8px 2px 1px;font-size:12px;letter-spacing:.02em}
+.login-card .input{min-height:50px;border-radius:14px;background:color-mix(in srgb,var(--bg) 70%,transparent);border:1px solid var(--sep-op)}
+.login-card .input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+.login-card .btn.primary{min-height:52px;margin-top:10px;border-radius:15px;font-weight:700;box-shadow:0 12px 30px color-mix(in srgb,var(--acc) 22%,transparent)}
+.login-status{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;white-space:nowrap;padding:7px 9px;border-radius:99px;background:rgba(83,224,193,.09);color:var(--teal)!important}
+.login-status i{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 9px var(--teal)}
+.login-help{margin-top:20px;line-height:1.5;color:var(--label-3);font-size:12px;text-align:center}
+@keyframes brand-arrive{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
 .field-label{display:block;margin:12px 2px 6px;color:var(--label-2);font-size:13px;font-weight:600}
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .routine-name{background:linear-gradient(90deg,var(--surface-2),transparent);border-bottom:1px solid var(--label-4)}
@@ -853,7 +905,9 @@ h4.sec{
 
 @media(max-height:640px){
   .login-screen{justify-content:flex-start!important;min-height:0!important;padding-top:12px}
-  .login-screen>img{width:72px;height:72px}
+  .login-mark{width:72px;height:72px;border-radius:20px;margin-bottom:10px}
+  .login-brand{margin-bottom:12px}.login-brand h1{font-size:32px}.login-brand p{margin-top:4px}
+  .login-kicker,.login-orbit{display:none}.login-card{padding:16px}.login-help{margin-top:12px}
   #toast{top:calc(10px + var(--sat));bottom:auto;border-radius:14px}
 }
 

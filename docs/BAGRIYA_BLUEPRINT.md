@@ -1,8 +1,8 @@
-# Bagriya FitFam blueprint
+# SAATH private family deployment blueprint
 
 ## Product
 
-Bagriya FitFam is the Bagriya family's private fitness tracker. It is installed on iPhones as a
+SAATH is a private family wellness and workout tracker. It is installed on phones as a
 Home Screen PWA and synchronizes each member's training data through a family-owned Oracle Cloud
 server. The administrator provisions accounts and can review workout, weight, and adherence data.
 
@@ -13,7 +13,6 @@ server. The administrator provisions accounts and can review workout, weight, an
 - Energetic orange `#FF6B1A`: primary actions and the strength portion of the BF mark
 - Warm gold `#E6B84A`: achievements, streaks, and the family connector
 - Master logo: `frontend/resources/icon.svg`
-- Generated concept reference: `assets/branding/bagriya-fitfam-concept-v1.png`
 
 ## Runtime architecture
 
@@ -55,7 +54,7 @@ completion, missed scheduled sessions, and the active completion streak.
 1. Back up and remove the former client demo only after confirming it is no longer required.
 2. Retain the existing Always Free VM when possible; recreating scarce A1 capacity is avoidable.
 3. Install Docker Engine, the Compose plugin, Git, and Caddy on Ubuntu.
-4. Clone this fork into `/opt/bagriya-fitfam` and copy `.env.example` to `.env`.
+4. Clone this repository into `/opt/saath` and copy `.env.example` to `.env`.
 5. Set `ORIGIN=https://gym.example.com`, `WEB_PORT=8080`, and `ALLOW_GUEST=0`.
 6. Build locally owned images with `docker compose up -d --build`.
 7. Bootstrap the administrator before sharing the URL.
@@ -89,4 +88,3 @@ application version that created the backup before attempting an upgrade.
 - `curl http://127.0.0.1:8080/api/health`
 - Create a test member, change its temporary password, record a workout, and verify adherence.
 - Reset the test member password and confirm its previous sessions no longer work.
-

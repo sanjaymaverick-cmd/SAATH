@@ -1,12 +1,12 @@
 # Third-party notices
 
-openGym — Copyright (C) 2026 Duarte Santos.
-openGym's own code is licensed under the **GNU AGPL v3.0** (see [LICENSE](LICENSE)).
+SAATH — Copyright (C) 2026 Duarte Santos.
+SAATH's own code is licensed under the **GNU AGPL v3.0** (see [LICENSE](LICENSE)).
 
 ## App store exception
 
 As an additional permission under section 7 of the AGPL v3.0, the copyright holder permits
-distribution of the openGym mobile application through app store platforms (such as the
+distribution of the SAATH mobile application through app store platforms (such as the
 Apple App Store and Google Play) whose terms of service would otherwise be incompatible
 with the AGPL, provided the corresponding source code remains available under the AGPL at
 the project repository. This permission applies to the distribution channel only and does
@@ -47,7 +47,7 @@ SOFTWARE.
 ## Exercise data & media
 
 Both come from [**hasaneyldrm/exercises-dataset**](https://github.com/hasaneyldrm/exercises-dataset),
-and that dataset licenses them differently. Neither is covered by openGym's AGPL license.
+and that dataset licenses them differently. Neither is covered by SAATH's AGPL license.
 
 ### Metadata & instruction text — MIT
 
@@ -87,13 +87,13 @@ The exercise thumbnails (180×180) and animations are **© [Gym visual](https://
 They are in the upstream dataset with the rights holder's written permission, granted to that
 dataset; that permission is **not transferable**. Their use is governed by Gym visual's
 [Terms & Conditions](https://gymvisual.com/content/3-terms-and-conditions-of-use) — not by the MIT
-license above, and not by openGym's AGPL.
+license above, and not by SAATH's AGPL.
 
-**openGym does not redistribute this media.** It is not in this repository, not in its history,
+**SAATH does not redistribute this media.** It is not in this repository, not in its history,
 and not in the published Docker images or the Android APK. A self-hosted instance downloads it
 from the upstream source on first `docker compose up`; the mobile and demo builds load it from a
 CDN at runtime.
 
-If you want to reuse the media — in openGym or anywhere else, commercially or not — **obtain your
+If you want to reuse the media — in SAATH or anywhere else, commercially or not — **obtain your
 own license from Gym visual first**, and keep the `© Gym visual — https://gymvisual.com/`
 attribution intact wherever it appears.

@@ -1,13 +1,13 @@
-# openGym MCP server
+# SAATH MCP server
 
 A [Model Context Protocol](https://modelcontextprotocol.io) bridge that lets an external LLM
-application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym profile —
+application (Claude Desktop, Cursor, Cline, Continue, etc.) read your SAATH profile —
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
 self-hosted `./data` directory.
 
 It is read-only, runs locally as a stdio process spawned by the LLM client, adds no new
-container, and requires no extra authentication. The LLM never sees passkeys, VAPID keys, or
-session secrets — it can only read the same `state-<uid>.json` files the openGym api already
+container, and requires no extra authentication. The LLM never sees password hashes or
+session secrets — it can only read the same `state-<uid>.json` files the SAATH API already
 writes.
 
 The numbers it answers with are computed by the **same pure functions the React UI uses**
@@ -36,8 +36,11 @@ to answer for — its user id is in `./data/db.json` under `users[].id`:
 node src/index.js
 
 # multi-user instance, or just to be explicit:
-OPENGYM_UID=<your-uid> OPENGYM_DATA=/path/to/openGym/data node src/index.js
+SAATH_UID=<your-uid> SAATH_DATA=/path/to/SAATH/data node src/index.js
 ```
+
+The npm package and executable name are both `saath-mcp`. `SAATH_DATA` selects the runtime
+data directory; `SAATH_UID` optionally selects one member when it cannot be auto-detected.
 
 ### 3. Register with your LLM client
 
@@ -47,12 +50,12 @@ Add the server to your LLM client's MCP config. For Claude Desktop, edit
 ```jsonc
 {
   "mcpServers": {
-    "opengym": {
+    "SAATH": {
       "command": "node",
-      "args": ["/absolute/path/to/openGym/mcp/src/index.js"],
+      "args": ["/absolute/path/to/SAATH/mcp/src/index.js"],
       "env": {
-        "OPENGYM_DATA": "/absolute/path/to/openGym/data",
-        "OPENGYM_UID": "<your-uid>"   // optional — auto-detected if you have one profile
+        "SAATH_DATA": "/absolute/path/to/SAATH/data",
+        "SAATH_UID": "<your-uid>"   // optional — auto-detected if you have one profile
       }
     }
   }
@@ -62,7 +65,7 @@ Add the server to your LLM client's MCP config. For Claude Desktop, edit
 For Cursor and other MCP-compatible clients, see the client's MCP docs — the same `command` +
 `args` + `env` shape is what every stdio MCP server expects.
 
-Restart the client; you should see the openGym tools appear with "serving profile \<name\>" on
+Restart the client; you should see the SAATH tools appear with "serving profile \<name\>" on
 the server's stderr.
 
 ## Tools
@@ -112,8 +115,8 @@ dependencies landed in `frontend/`, no public exports changed.
 cd mcp && npm test
 ```
 
-32 cases seeding state from `frontend/src/lib/demoSeed.js` (the same deterministic fixture
-the public demo runs on). Pins JSON shape and the user-facing edge cases: rest-day override,
+The suite seeds state from `frontend/src/lib/demoSeed.js`, a deterministic test fixture. It pins
+JSON shape and the user-facing edge cases: rest-day override,
 missing routine, zero-workout history, no synced state, superset links, three 1RM formulas.
 "Today" is pinned via `vi.useFakeTimers({ now: ..., toFake: ['Date'] })` so date-dependent
 tools see consistent values regardless of when the suite runs. The pure lib functions have
@@ -133,4 +136,4 @@ their own 92 tests in `frontend/src/lib/*.test.js`.
 
 ## License
 
-AGPL-3.0-or-later, same as openGym.
+AGPL-3.0-or-later, same as SAATH.

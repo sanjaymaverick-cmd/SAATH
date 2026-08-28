@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Bagriya FitFam</string>
-    <string name="title_activity_main">Bagriya FitFam</string>
-    <string name="package_name">com.bagriya.fitfam</string>
-    <string name="custom_url_scheme">com.bagriya.fitfam</string>
+    <string name="app_name">SAATH</string>
+    <string name="title_activity_main">SAATH</string>
+    <string name="package_name">com.bagriya.saath</string>
+    <string name="custom_url_scheme">com.bagriya.saath</string>
 </resources>

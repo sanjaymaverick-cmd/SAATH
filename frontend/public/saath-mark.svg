@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">SAATH</title>
+  <desc id="desc">Two connected paths forming an S.</desc>
+  <defs>
+    <linearGradient id="bg" x1="52" y1="28" x2="460" y2="484" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102D4F"/><stop offset="1" stop-color="#071525"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="112" y1="112" x2="404" y2="406" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7A3D"/><stop offset=".48" stop-color="#FF4F67"/><stop offset="1" stop-color="#7B61FF"/>
+    </linearGradient>
+    <linearGradient id="link" x1="140" y1="396" x2="384" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#53E0C1"/><stop offset="1" stop-color="#B9F86A"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <circle cx="418" cy="92" r="86" fill="#53E0C1" opacity=".055"/>
+  <circle cx="82" cy="422" r="108" fill="#FF5B4F" opacity=".055"/>
+  <path d="M362 117H217c-66 0-108 34-108 86 0 51 40 81 104 81h86c28 0 45 11 45 31 0 21-18 33-48 33H149" fill="none" stroke="url(#ribbon)" stroke-width="64" stroke-linecap="round"/>
+  <path d="M150 395h145c66 0 108-34 108-86 0-51-40-81-104-81h-86c-28 0-45-11-45-31 0-21 18-33 48-33h147" fill="none" stroke="url(#link)" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="369" cy="117" r="19" fill="#FFF"/><circle cx="143" cy="395" r="19" fill="#FFF"/>
+</svg>
