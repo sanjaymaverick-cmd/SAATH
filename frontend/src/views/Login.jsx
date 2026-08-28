@@ -68,5 +68,8 @@ export default function Login() {
     </form>
     {canGuest && <Button variant="ghost" className="dim" onClick={() => setGuest(true)} style={{ marginTop: 10 }}>{t('Continue without account')}</Button>}
     <div className="login-help">Access is provided by your SAATH administrator.<br />Need help signing in? Contact your family administrator.</div>
+    <div className="dim small" style={{ marginTop: 20, textAlign: 'center', opacity: 0.6 }}>
+      Made for "Suman Bagriya by Sanjay Bagriya"
+    </div>
   </div>
 }

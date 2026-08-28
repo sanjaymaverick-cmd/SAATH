@@ -1,7 +1,9 @@
 export const IS_ANDROID = /Android/.test(navigator.userAgent)
 
+const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
+
 export async function api(path, opts) {
-  const r = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts))
+  const r = await fetch(API_BASE + path, Object.assign({ headers: { 'Content-Type': 'application/json' }, credentials: API_BASE ? 'include' : 'same-origin' }, opts))
   const data = await r.json().catch(() => ({}))
   if (!r.ok) { const e = new Error(data.error || ('HTTP ' + r.status)); e.status = r.status; throw e }
   return data

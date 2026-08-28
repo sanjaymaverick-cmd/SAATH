@@ -4,7 +4,7 @@ import { localTZ } from '../lib/format.js'
 import { registerCustom } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { guestAllowed } from '../lib/guest.js'
-import { MOBILE, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
+import { MOBILE, MOBILE_SYNC, nativeLoad, nativeSave, syncReminder } from '../lib/mobile.js'
 import { hasData, shouldAcceptServerState } from './stateMerge.js'
 
 const KEY = 'gym_state_v1'
@@ -58,7 +58,10 @@ export const useStore = create((set, get) => {
   // same applies to the file mirror — backgrounding is often the last thing before the OS
   // kills the app.
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'hidden') return
+    if (document.visibilityState !== 'hidden') {
+      if (MOBILE_SYNC && get().user) get().pullState()
+      return
+    }
     if (MOBILE && saveTm) {
       clearTimeout(saveTm)
       saveTm = null
@@ -170,7 +173,7 @@ export const useStore = create((set, get) => {
 
     // Boot: ask the server who we are, then pull.
     async boot() {
-      // Mobile build: no backend either — restore from the file mirror (the durable copy;
+      // Mobile build: restore from the file mirror (the durable copy;
       // localStorage may have been evicted since the last run) and go straight in.
       if (MOBILE) {
         const saved = await nativeLoad()
@@ -180,10 +183,12 @@ export const useStore = create((set, get) => {
         } else if (hasData(S)) {
           nativeSave(S)   // first run after an update from a file-less version: seed the mirror
         }
-        get().setGuest(true)
         syncReminder(get().S)
-        set({ ready: true })
-        return
+        if (!MOBILE_SYNC) {
+          get().setGuest(true)
+          set({ ready: true })
+          return
+        }
       }
       // Demo build (GitHub Pages): no backend at all — seed once, stay in guest mode.
       if (DEMO) {

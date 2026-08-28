@@ -7,7 +7,6 @@ ADMIN_LOGIN="${3:-owner}"
 ADMIN_NAME="${4:-Family Admin}"
 DOMAIN="${5:-}"
 APP_ROOT=/opt/saath
-OLD_ROOT=/opt/bagriya-fitfam
 RELEASE_ID="$(date -u +%Y%m%d%H%M%S)"
 RELEASE="$APP_ROOT/releases/$RELEASE_ID"
 
@@ -70,33 +69,6 @@ fi
 
 cd "$RELEASE"
 sudo docker compose "${COMPOSE_ARGS[@]}" build
-
-if [ -d "$OLD_ROOT/current" ] || [ -f "$OLD_ROOT/current/docker-compose.yml" ]; then
-  echo "Stopping existing Bagriya FitFam deployment before replacing it with SAATH..."
-  if [ -f "$OLD_ROOT/current/docker-compose.yml" ]; then
-    (cd "$OLD_ROOT/current" && sudo docker compose down --remove-orphans) || true
-  fi
-fi
-
-if [ -d "$OLD_ROOT/data" ] && [ ! -s "$APP_ROOT/data/db.json" ]; then
-  echo "Migrating existing family data from $OLD_ROOT/data to $APP_ROOT/data..."
-  sudo cp -a "$OLD_ROOT/data/." "$APP_ROOT/data/"
-fi
-
-if [ -d "$OLD_ROOT/media/img" ] && [ -z "$(sudo find "$APP_ROOT/media/img" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
-  echo "Migrating exercise images from $OLD_ROOT/media/img..."
-  sudo cp -a "$OLD_ROOT/media/img/." "$APP_ROOT/media/img/"
-fi
-
-if [ -d "$OLD_ROOT/media/gif" ] && [ -z "$(sudo find "$APP_ROOT/media/gif" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
-  echo "Migrating exercise animations from $OLD_ROOT/media/gif..."
-  sudo cp -a "$OLD_ROOT/media/gif/." "$APP_ROOT/media/gif/"
-fi
-
-if [ -d "$OLD_ROOT/backups" ] && [ -z "$(sudo find "$APP_ROOT/backups" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
-  echo "Copying existing backups from $OLD_ROOT/backups to $APP_ROOT/backups..."
-  sudo cp -a "$OLD_ROOT/backups/." "$APP_ROOT/backups/"
-fi
 
 # Bootstrap only a genuinely fresh server. The command prints the temporary password once.
 if [ ! -s "$APP_ROOT/data/db.json" ]; then

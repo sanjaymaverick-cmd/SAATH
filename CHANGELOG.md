@@ -49,13 +49,6 @@ entry otherwise remains a record of the inherited release and does not describe 
 A housekeeping release whose durable change was correcting the exercise-media licence: the
 images and animations are © Gym visual, not CC, which matters if you redistribute them.
 
-### Historical repository note
-
-- Hosting and publication details from the inherited project are obsolete and intentionally
-  omitted. The current repository is <https://github.com/sanjaymaverick-cmd/SAATH>.
-- Old issue and pull-request numbers below are retained as unlinked historical references. They
-  do not identify issues or pull requests in the current SAATH repository.
-
 ### The exercise media is © Gym visual — not CC
 
 - ⚖️ **SAATH described the exercise dataset as "CC". That was wrong**, and it is now

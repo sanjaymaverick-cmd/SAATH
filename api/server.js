@@ -34,6 +34,7 @@ const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 5 * 1024 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
+const NATIVE_ORIGINS = new Set(['capacitor://localhost', 'http://localhost', 'https://localhost']);
 
 fs.mkdirSync(DATA, { recursive: true });
 
@@ -208,10 +209,15 @@ function requireAdmin(req, res) {
   if (!isAdmin(user)) { audit(req, 'admin.denied', { ok: false, user }); json(res, 403, { error: 'forbidden' }); return null; }
   return user;
 }
-function sessionCookie(user) {
-  return `gymsid=${makeSession(user)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=Lax`;
+function nativeRequest(req) { return NATIVE_ORIGINS.has(req.headers.origin); }
+function sessionCookie(req, user) {
+  const sameSite = nativeRequest(req) ? 'None' : 'Lax';
+  return `gymsid=${makeSession(user)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=${sameSite}`;
 }
-const clearCookie = `gymsid=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=Lax`;
+function clearCookie(req) {
+  const sameSite = nativeRequest(req) ? 'None' : 'Lax';
+  return `gymsid=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=${sameSite}`;
+}
 
 /* ---------- challenge store (in-memory, 5 min TTL) ---------- */
 const challenges = new Map(); // cid -> {challenge, name?, uid?, exp}
@@ -406,7 +412,7 @@ const routes = {
     }
     loginAttempts.delete(key);
     audit(req, 'auth.login.ok', { user });
-    json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(req, user) });
   },
 
   'POST /api/password/change': async (req, res) => {
@@ -424,7 +430,7 @@ const routes = {
     user.sv = sessionVersion(user) + 1;
     saveDb();
     audit(req, 'auth.password.change', { user });
-    json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(req, user) });
   },
 
   'POST /api/register/options': async (req, res) => {
@@ -502,7 +508,7 @@ const routes = {
     });
     saveDb();
     audit(req, 'auth.register.ok', { user, msg: invite ? invite.code : null });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(req, user) });
   },
 
   'POST /api/login/options': async (req, res) => {
@@ -565,7 +571,7 @@ const routes = {
       return json(res, 403, { error: 'this account has been disabled' });
     }
     audit(req, 'auth.login.ok', { user });
-    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(user) });
+    json(res, 200, { user: { id: user.id, name: user.name, admin: isAdmin(user) } }, { 'Set-Cookie': sessionCookie(req, user) });
   },
 
   // Reads the session purely so the sign-out can be recorded; the cookie is cleared either way.
@@ -573,7 +579,7 @@ const routes = {
   'POST /api/logout': async (req, res) => {
     const user = readSession(req);
     if (user) audit(req, 'auth.logout', { user });
-    json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
+    json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie(req) });
   },
 
   // "Sign out everywhere" — bumps this user's session version, which invalidates every cookie
@@ -586,7 +592,7 @@ const routes = {
     user.sv = sessionVersion(user) + 1;
     saveDb();
     audit(req, 'auth.logout.all', { user });
-    json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
+    json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie(req) });
   },
 
   'GET /api/data': async (req, res) => {
@@ -836,6 +842,13 @@ const routes = {
 };
 
 http.createServer(async (req, res) => {
+  if (NATIVE_ORIGINS.has(req.headers.origin)) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+  }
+  if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
   const url = new URL(req.url, 'http://x');
   const key = req.method + ' ' + url.pathname;
   const handler = routes[key];

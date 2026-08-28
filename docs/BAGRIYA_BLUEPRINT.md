@@ -51,16 +51,15 @@ completion, missed scheduled sessions, and the active completion streak.
 
 ## Oracle Cloud rollout
 
-1. Back up and remove the former client demo only after confirming it is no longer required.
-2. Retain the existing Always Free VM when possible; recreating scarce A1 capacity is avoidable.
-3. Install Docker Engine, the Compose plugin, Git, and Caddy on Ubuntu.
-4. Clone this repository into `/opt/saath` and copy `.env.example` to `.env`.
-5. Set `ORIGIN=https://gym.example.com`, `WEB_PORT=8080`, and `ALLOW_GUEST=0`.
-6. Build locally owned images with `docker compose up -d --build`.
-7. Bootstrap the administrator before sharing the URL.
-8. Configure Caddy from `deploy/Caddyfile.example` and allow inbound TCP 80/443 in OCI.
-9. Keep port 8080 closed in the OCI security list; it is only a local Caddy upstream.
-10. Verify iPhone installation, login, synchronization, notifications, and admin metrics.
+1. Retain the existing Always Free VM when possible; recreating scarce A1 capacity is avoidable.
+2. Install Docker Engine, the Compose plugin, Git, and Caddy on Ubuntu.
+3. Clone this repository into `/opt/saath` and copy `.env.example` to `.env`.
+4. Set `ORIGIN=https://gym.example.com`, `WEB_PORT=8080`, and `ALLOW_GUEST=0`.
+5. Build locally owned images with `docker compose up -d --build`.
+6. Bootstrap the administrator before sharing the URL.
+7. Configure Caddy from `deploy/Caddyfile.example` and allow inbound TCP 80/443 in OCI.
+8. Keep port 8080 closed in the OCI security list; it is only a local Caddy upstream.
+9. Verify iPhone installation, login, synchronization, notifications, and admin metrics.
 
 ## Backup and restore
 

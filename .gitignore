@@ -16,6 +16,7 @@ frontend/android/**/build/
 .env
 .env.*
 !.env.example
+.duckdns-token
 *.jks
 *.keystore
 *.p12
@@ -40,6 +41,8 @@ media/img/
 media/gif/
 
 # Temporary and local QA files
+.artifacts/
+.idea/
 *.log
 *.tmp
 *.temp

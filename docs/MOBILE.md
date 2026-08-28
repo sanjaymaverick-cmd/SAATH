@@ -2,19 +2,19 @@
 
 SAATH ships in two flavors from the same codebase:
 
-| | **Self-hosted** (this repo's default) | **Mobile app** (`VITE_MOBILE=1`) |
+| | **Self-hosted** (this repo's default) | **Connected mobile app** (`VITE_MOBILE=1`, `VITE_MOBILE_SYNC=1`) |
 |---|---|---|
 | Runs | in any browser, against your own server | natively on iPhone / Android (Capacitor shell) |
-| Accounts | administrator-created accounts, one profile per person | none — the phone *is* the account |
-| Data | synced to your server, readable on desktop | stays on the device (file in the app's private storage) |
-| Reminders | Web Push from your server | native local notifications, no server involved |
+| Accounts | administrator-created accounts, one profile per person | same Oracle-hosted account and administrator controls |
+| Data | synced to your server, readable on desktop | synced to the server and mirrored in the app's private storage |
+| Reminders | Web Push from your server | native local notifications |
 | Exercise media | served by your server (`img/`, `gif/`) | loaded from the jsDelivr CDN |
 
-The mobile flavor never talks to a backend: no sign-in screen, no sync, no telemetry.
-State is mirrored from `localStorage` into `SAATH-state.json` in the app's private data
-directory on every change (iOS is allowed to evict WebView storage under pressure — the
-file mirror is the durable copy and is restored on launch). Backups go out through the
-OS share sheet instead of a browser download.
+The connected mobile flavor uses the same login and data API as the Oracle-hosted app. State is
+mirrored from `localStorage` into `SAATH-state.json` in the app's private data directory on every
+change, then synchronized after changes, on launch, and whenever the app returns to the foreground.
+The file mirror lets the app keep working while offline; it is reconciled with the server when a
+connection returns. Backups go out through the OS share sheet instead of a browser download.
 
 ## Prerequisites
 
@@ -29,14 +29,23 @@ OS share sheet instead of a browser download.
 ```sh
 cd frontend
 npm install
-npm run build:mobile        # VITE_MOBILE build + `cap sync` into android/ and ios/
+$env:VITE_MOBILE = '1'
+$env:VITE_MOBILE_SYNC = '1'
+$env:VITE_API_BASE = 'https://saath.example.com'
+$env:VITE_IMG_BASE = 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/images/'
+$env:VITE_GIF_BASE = 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/videos/'
+npm run build
+npx cap sync
 
 npx cap open android        # opens Android Studio → run on emulator or device
 npx cap open ios            # opens Xcode (Mac only) → set your signing team, then run
 ```
 
-`npm run build:mobile` bakes the CDN media base into the bundle and copies the web build
-into both native projects — re-run it after every web-code change before building natively.
+The mobile build bakes the Oracle API URL and CDN media bases into the bundle, then copies the web
+build into both native projects. Re-run it after every web-code change before building natively.
+
+For GitHub Actions, set the repository variable `SAATH_ORIGIN` to the Oracle HTTPS URL. The Android
+workflow refuses to build a connected APK if that variable is missing.
 
 > **Heads-up:** after `build:mobile`, `frontend/dist` contains the *mobile* bundle.
 > Run a plain `npm run build` again before deploying `dist` to a server.

@@ -1,6 +1,6 @@
 # SAATH — Progress, together.
 
-SAATH is a private family wellness and workout application. It is designed to run on infrastructure controlled by a family or small trusted group, with each member's training data isolated behind an administrator-created account. It can also be built as a standalone mobile app whose data stays on the device.
+SAATH is a private family wellness and workout application. It is designed to run on infrastructure controlled by a family or small trusted group, with each member's training data isolated behind an administrator-created account. Its mobile app signs in to and synchronizes with the same family-owned deployment while retaining an offline copy on the device.
 
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-a3e635?style=flat-square)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/sanjaymaverick-cmd/SAATH?style=flat-square)](https://github.com/sanjaymaverick-cmd/SAATH/commits/main)
@@ -73,8 +73,6 @@ Back up `data/` to encrypted storage. Exercise media is fetched separately and c
 
 SAATH uses exercise metadata and instruction text from [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset), licensed under MIT. Exercise images and animations are © [Gym visual](https://gymvisual.com/) and are governed by that provider's terms; permission associated with the upstream dataset is not transferable. SAATH does not redistribute that media in this repository or in the Android package. See [NOTICE.md](NOTICE.md) for the complete attribution and reuse notice.
 
-## License and heritage
+## License
 
 SAATH is licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
-
-This project inherits code originally created by Duarte Santos. That contribution is acknowledged neutrally and does not imply current repository ownership, support, hosting, or distribution. Historical contributor credits remain in the changelog and Git history.

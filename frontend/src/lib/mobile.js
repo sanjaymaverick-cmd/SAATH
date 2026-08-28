@@ -1,7 +1,7 @@
-// Mobile build (VITE_MOBILE=1) — the standalone app-store version (Capacitor native shell).
+// Mobile build (VITE_MOBILE=1) — the Capacitor native shell.
 //
-// There is no backend: nothing to sign in to, everything lives on the phone. Unlike guest
-// mode in a browser, this is the user's only copy of their training log, so it can't depend
+// Connected builds use the same Oracle account and API as the PWA while retaining an offline
+// copy. Unlike guest mode in a browser, the copy can't depend
 // on WebView localStorage alone (iOS evicts that under storage pressure). Every persist()
 // therefore also lands in a JSON file in the app's private data directory, and boot()
 // restores from it. The workout reminder uses native local notifications scheduled per
@@ -12,6 +12,7 @@
 import { t } from './i18n-core.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
+export const MOBILE_SYNC = MOBILE && import.meta.env.VITE_MOBILE_SYNC === '1'
 
 const FILE = 'SAATH-state.json'
 
