@@ -87,7 +87,7 @@ services:
     depends_on:
       - web
     environment:
-      - DOMAIN=${DOMAIN:?set DOMAIN in .env to use the https profile}
+      - DOMAIN=${DOMAIN:-}
       - NGINX_PORT=${NGINX_PORT:-80}
     ports:
       - "80:80"
