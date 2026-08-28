@@ -19,7 +19,7 @@ connection returns. Backups go out through the OS share sheet instead of a brows
 ## Prerequisites
 
 - Node 20+
-- **Android:** Android Studio with SDK platform 35/build-tools installed. Java 17 for Gradle.
+- **Android:** Android Studio with SDK platform 35/build-tools installed. Java 21 for Gradle.
 - **iOS:** a Mac with Xcode 15+ and CocoaPods (`brew install cocoapods`). A free Apple ID
   is enough to run the app on your own iPhone (see below); paid membership is only needed
   for App Store distribution, which SAATH doesn't do.
