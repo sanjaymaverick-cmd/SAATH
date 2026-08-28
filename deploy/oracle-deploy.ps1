@@ -33,13 +33,20 @@ try {
   Write-Host 'Packaging SAATH source...' -ForegroundColor Cyan
   & tar.exe -czf $Archive `
     --exclude='.git' `
+    --exclude='.jdk' `
     --exclude='.runtime' `
     --exclude='data' `
     --exclude='media' `
     --exclude='qa' `
     --exclude='frontend/node_modules' `
     --exclude='frontend/dist' `
+    --exclude='frontend/android/.gradle' `
+    --exclude='frontend/android/build' `
+    --exclude='frontend/android/app/build' `
+    --exclude='frontend/android/app/src/main/assets' `
+    --exclude='frontend/android/capacitor-cordova-android-plugins' `
     --exclude='api/node_modules' `
+    --exclude='mcp/node_modules' `
     -C $ProjectRoot .
   if ($LASTEXITCODE -ne 0) { throw 'Packaging failed.' }
 
