@@ -136,7 +136,7 @@ export default function Settings() {
       <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
         <Segmented
           className="seg-inline"
-          options={[{ value: 'male', label: t('Male') }, { value: 'female', label: t('Female') }]>
+          options={[{ value: 'male', label: t('Male') }, { value: 'female', label: t('Female') }]}
           value={S.body === 'female' ? 'female' : 'male'}
           onChange={v => update(s => { s.body = v })}
         />
