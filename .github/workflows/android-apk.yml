@@ -11,9 +11,11 @@ on:
       - 'frontend/**'
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-apk-${{ github.ref }}
@@ -46,7 +48,13 @@ jobs:
       - run: npm ci
         working-directory: frontend
 
-      - run: test -n "$VITE_API_BASE" || (echo "Set the repository variable SAATH_ORIGIN to your Oracle HTTPS URL before building an APK." && exit 1)
+      - name: Require family server URL
+        run: |
+          if [ -z "$VITE_API_BASE" ]; then
+            echo "Set repository variable SAATH_ORIGIN to your Oracle HTTPS URL (Settings → Secrets and variables → Actions → Variables)."
+            exit 1
+          fi
+          echo "Building connected APK against $VITE_API_BASE"
 
       - run: npm run build
         working-directory: frontend
@@ -57,19 +65,69 @@ jobs:
       - run: chmod +x gradlew
         working-directory: frontend/android
 
-      - run: ./gradlew assembleDebug assembleRelease --no-daemon
+      - name: Assemble debug and release APKs
+        run: ./gradlew assembleDebug assembleRelease --no-daemon
         working-directory: frontend/android
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: saath-debug-apk
-          path: frontend/android/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 14
+      - name: Collect APKs under predictable names
+        run: |
+          set -euo pipefail
+          mkdir -p dist-apk
+          DEBUG=$(find frontend/android/app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          RELEASE=$(find frontend/android/app/build/outputs/apk/release -name '*.apk' | head -n 1)
+          test -n "$DEBUG"
+          test -n "$RELEASE"
+          cp "$DEBUG" dist-apk/SAATH-debug.apk
+          cp "$RELEASE" dist-apk/SAATH-release-unsigned.apk
+          # Debug APK is already signed with the Android debug key and can be sideloaded.
+          cp dist-apk/SAATH-debug.apk dist-apk/SAATH.apk
+          ls -lh dist-apk
+
+      - name: Sign release APK when a keystore is configured
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/saath.keystore
+          ANDROID_HOME=${ANDROID_HOME:-$HOME/Android/Sdk}
+          BUILD_TOOLS=$(ls -1d "$ANDROID_HOME"/build-tools/* | tail -n 1)
+          "$BUILD_TOOLS"/zipalign -f -p 4 dist-apk/SAATH-release-unsigned.apk /tmp/saath-aligned.apk
+          "$BUILD_TOOLS"/apksigner sign \
+            --ks /tmp/saath.keystore \
+            --ks-pass pass:"$ANDROID_KEYSTORE_PASSWORD" \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --key-pass pass:"${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}" \
+            --out dist-apk/SAATH-release.apk \
+            /tmp/saath-aligned.apk
+          cp dist-apk/SAATH-release.apk dist-apk/SAATH.apk
+          rm -f /tmp/saath.keystore
 
       - uses: actions/upload-artifact@v4
         with:
-          name: saath-release-unsigned-apk
-          path: frontend/android/app/build/outputs/apk/release/*.apk
+          name: SAATH.apk
+          path: dist-apk/SAATH.apk
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: saath-apk-bundle
+          path: dist-apk/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Attach APK to a GitHub Release on tags and manual runs
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('apk-{0}', github.run_number) || github.ref_name }}
+          name: SAATH Android ${{ github.event_name == 'workflow_dispatch' && format('build {0}', github.run_number) || github.ref_name }}
+          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+          files: |
+            dist-apk/SAATH.apk
+            dist-apk/SAATH-debug.apk
+          generate_release_notes: true
