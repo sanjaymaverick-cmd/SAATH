@@ -28,7 +28,6 @@ export default function Settings() {
   const doExport = async () => {
     const json = JSON.stringify(S, null, 2)
     const name = 'saath-backup-' + todayISO() + '.json'
-    // WKWebView can't download blob URLs — the native build hands the file to the share sheet.
     if (MOBILE) {
       try { await shareExport(json, name); toast(t('Backup exported')) } catch (e) { /* share sheet dismissed */ }
       return
@@ -49,9 +48,6 @@ export default function Settings() {
     }
     rd.readAsText(f)
   }
-  // Ends the profile's sessions on every device — this one included, so on success it lands in
-  // the same place as the plain sign-out above (home, local data cleared). On failure nothing
-  // local is touched: still signed in here, and say so rather than leaving a half-signed-out app.
   const signOutEverywhere = () => confirmSheet({
     title: t('Sign out everywhere?'),
     message: 'Signs this profile out on every device. Sign in again with your login ID and password.',
@@ -68,17 +64,16 @@ export default function Settings() {
       <div style={{ flex: 1, marginLeft: 10 }}><h1>{t('Settings')}</h1></div>
     </div>
 
-    {/* ---------- account (demo and mobile builds have nothing to sign in to) ---------- */}
     <Section title={offlineMobile ? t('Your data') : DEMO ? t('Demo') : t('Account')}>
       {offlineMobile ? <>
         <Row icon="lock" iconTint="var(--acc)" title={t('All data stays on this phone')} subtitle={t('No account, no cloud — back it up anytime with Export below.')} />
-        <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host SAATH')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
+        <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host SAATH')} subtitle={t('Administrator accounts, sync across your devices, your own data.')} accessory="chevron"
           onClick={() => window.open(REPO, '_blank', 'noopener')} />
       </> : DEMO ? <>
         <Row icon="sparkles" iconTint="var(--acc)" title={t('You’re in the demo')} subtitle={t('Example data, stored only in this browser — change anything you like.')} />
         <Row icon="reset" iconTint="var(--blue)" title={t('Reset demo data')} accessory="chevron"
           onClick={() => confirmSheet({ title: t('Reset demo data?'), message: t('Puts the example plan, workouts and weigh-ins back the way they started.'), confirmText: t('Reset'), onConfirm: () => { resetDemo(); nav('/home'); toast(t('Demo data reset')) } })} />
-        <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host SAATH')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
+        <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host SAATH')} subtitle={t('Administrator accounts, sync across your devices, your own data.')} accessory="chevron"
           onClick={() => window.open(REPO, '_blank', 'noopener')} />
       </> : user ? <>
         <Row icon="personCircle" iconTint="var(--grey)" title={user.name} subtitle={`Login ID: ${user.login || 'legacy account'} · data syncs to this profile.`} />
@@ -89,7 +84,6 @@ export default function Settings() {
     </Section>
     {!user && !DEMO && !MOBILE && <p className="sect-f" style={{ marginTop: -18, marginBottom: 22 }}>{t('Guest mode — data lives only in this browser.')}</p>}
 
-    {/* ---------- general ---------- */}
     <Section title={t('General')} footer={t('Note: switching units only changes the label — logged numbers are not converted.')}>
       <SelectRow
         icon="globe" iconTint="var(--blue)" title={t('Language')}
@@ -106,7 +100,6 @@ export default function Settings() {
       </Row>
     </Section>
 
-    {/* ---------- during a workout ---------- */}
     <Section title={t('During a workout')} footer={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : null}>
       <SelectRow icon="timer" iconTint="var(--orange)" title={t('Rest timer')}
         value={S.restSec} onChange={v => update(s => { s.restSec = v })}
@@ -121,8 +114,6 @@ export default function Settings() {
       <Row icon="bell" iconTint="var(--pink)" title={t('Sounds')}>
         <Switch checked={!!S.sound} onChange={v => update(s => { s.sound = v })} />
       </Row>
-      {/* Two names for the same judgement, so the column asks in the scale you already think in.
-          The (i) sits before the control — you read it on the way to the choice, not after it. */}
       <Row icon="target" iconTint="var(--purple)" title={t('Effort per set')}>
         <button className="helpbtn" aria-label={t('What are RIR and RPE?')} onClick={effortHelpSheet}><Icon name="info" /></button>
         <Segmented className="seg-inline"
@@ -133,7 +124,6 @@ export default function Settings() {
 
     {(user || MOBILE) && <NotificationsCard S={S} update={update} toast={toast} />}
 
-    {/* ---------- appearance ---------- */}
     <Section title={t('Appearance')} footer={DEMO || offlineMobile ? undefined : t('synced with your profile')}>
       <Row icon="moon" iconTint="var(--indigo)" title={t('Theme')}>
         <Segmented
@@ -143,11 +133,10 @@ export default function Settings() {
           onChange={v => update(s => { s.theme = v })}
         />
       </Row>
-      {/* Purely how the muscle map is drawn — nothing else in the app reads this. */}
       <Row icon="figureStrength" iconTint="var(--teal)" title={t('Body diagram')}>
         <Segmented
           className="seg-inline"
-          options={[{ value: 'male', label: t('Male') }, { value: 'female', label: t('Female') }]}
+          options={[{ value: 'male', label: t('Male') }, { value: 'female', label: t('Female') }]>
           value={S.body === 'female' ? 'female' : 'male'}
           onChange={v => update(s => { s.body = v })}
         />
@@ -163,7 +152,6 @@ export default function Settings() {
       </div>
     </Section>
 
-    {/* ---------- data: fill it, bring things over, back it up, wipe it ---------- */}
     <Section title={t('Data')}>
       <Row icon="sparkles" iconTint="var(--acc)" title={t('Load starter plan (PPL)')} accessory="chevron" onClick={loadStarterPlan} />
       <Row icon="shuffle" iconTint="var(--teal)" title={t('Import from another app')}
@@ -174,11 +162,9 @@ export default function Settings() {
       <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={() => confirmSheet({ title: t('Reset everything?'), message: t('Deletes your plan, workouts and body weight on this device. This cannot be undone.'), confirmText: t('Delete everything'), danger: true, onConfirm: () => { replaceState(JSON.parse(JSON.stringify(DEF)), true); nav('/home'); toast(t('All data reset')) } })} />
     </Section>
     <input ref={fileRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={doImport} />
-    {/* Reset after reading so picking the same file twice still fires onChange. */}
     <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
       onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
 
-    {/* "Add to Home screen" makes no sense inside the native app */}
     {!MOBILE && <Section title={t('Tip')}>
       <Row icon="lightbulb" iconTint="var(--yellow)"
         title={IS_ANDROID ? t('In Chrome: ⋮ menu → Add to Home screen') : t('In Safari: Share → Add to Home Screen')}
@@ -186,16 +172,13 @@ export default function Settings() {
     </Section>}
 
     <div className="dim small" style={{ textAlign: 'center', marginTop: 4, lineHeight: 1.6 }}>
-      SAATH · based on SAATH · {t('free & open source (AGPL v3)')}<br />
+      SAATH · {t('free & open source (AGPL v3)')}<br />
       Made for "Suman Bagriya by Sanjay Bagriya"<br />
       <a href="https://github.com/sanjaymaverick-cmd/SAATH" target="_blank" rel="noopener">source code</a> · exercise data: hasaneyldrm/exercises-dataset (MIT)<br />
       exercise images and animations © <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym visual</a>
     </div>
   </div>
 }
-// The whole point is that the two scales are one judgement counted from opposite ends, and a
-// paragraph is a bad way to say that — the conversion table shows it in one look. Reading down
-// a column is the answer to "what do I put here", so the numbers get their own aligned columns.
 const EFFORT_ROWS = [
   ['0', '10', 'Nothing left — went to failure'],
   ['1', '9', 'One more rep in the tank'],
@@ -203,8 +186,6 @@ const EFFORT_ROWS = [
   ['3', '7', 'Three more reps'],
   ['4+', '≤6', 'Easy — warm-up territory'],
 ]
-// RIR 2 / RPE 8: the row a working set usually lands on — the anchor the others are read
-// against. Not where the stepper starts; + walks up from the bottom of the scale.
 const EFFORT_TYPICAL = 2
 
 function effortHelpSheet() {
@@ -234,9 +215,6 @@ function NotificationsCard({ S, update, toast }) {
   return <PushCard S={S} update={update} toast={toast} />
 }
 
-// Mobile build: the reminder is a native local notification scheduled on planned weekdays —
-// no push server involved. The schedule itself is (re)synced by the store on every persist;
-// this card only owns the OS permission prompt when the switch turns on.
 function MobileReminderCard({ S, update, toast }) {
   const setReminder = patch => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), ...patch, tz: localTZ() } })
   const toggle = async () => {
