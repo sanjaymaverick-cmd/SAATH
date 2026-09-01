@@ -11,8 +11,6 @@ on:
       - 'frontend/**'
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
-  release:
-    types: [published]
 
 permissions:
   contents: write
@@ -79,12 +77,10 @@ jobs:
           test -n "$RELEASE"
           cp "$DEBUG" dist-apk/SAATH-debug.apk
           cp "$RELEASE" dist-apk/SAATH-release-unsigned.apk
-          # Debug APK is already signed with the Android debug key and can be sideloaded.
           cp dist-apk/SAATH-debug.apk dist-apk/SAATH.apk
           ls -lh dist-apk
 
-      - name: Sign release APK when a keystore is configured
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      - name: Sign release APK when a keystore secret exists
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -92,6 +88,10 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
+          if [ -z "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+            echo "No ANDROID_KEYSTORE_BASE64 secret — publishing debug-signed SAATH.apk"
+            exit 0
+          fi
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/saath.keystore
           ANDROID_HOME=${ANDROID_HOME:-$HOME/Android/Sdk}
           BUILD_TOOLS=$(ls -1d "$ANDROID_HOME"/build-tools/* | tail -n 1)
@@ -120,14 +120,15 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Attach APK to a GitHub Release on tags and manual runs
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
+      - name: Publish APK on the GitHub Releases page
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('apk-{0}', github.run_number) || github.ref_name }}
-          name: SAATH Android ${{ github.event_name == 'workflow_dispatch' && format('build {0}', github.run_number) || github.ref_name }}
-          prerelease: ${{ github.event_name == 'workflow_dispatch' }}
+          tag_name: apk-${{ github.run_number }}
+          name: SAATH Android build ${{ github.run_number }}
+          prerelease: true
           files: |
             dist-apk/SAATH.apk
             dist-apk/SAATH-debug.apk
           generate_release_notes: true
+          make_latest: true
