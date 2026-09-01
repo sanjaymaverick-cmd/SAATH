@@ -10,7 +10,7 @@ server. The administrator provisions accounts and can review workout, weight, an
 
 - Deep navy `#081A33`: app background and icon field
 - Charcoal navy `#172B44`: cards and elevated surfaces
-- Energetic orange `#FF6B1A`: primary actions and the strength portion of the BF mark
+- Energetic orange `#FF6B1A`: primary actions and the strength portion of the SAATH mark
 - Warm gold `#E6B84A`: achievements, streaks, and the family connector
 - Master logo: `frontend/resources/icon.svg`
 

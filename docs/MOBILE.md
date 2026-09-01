@@ -52,12 +52,12 @@ workflow refuses to build a connected APK if that variable is missing.
 
 ## App icons & splash screens
 
-`frontend/resources/icon.svg` is the 1024×1024 source (the app's dumbbell glyph on the
-app background). Generate all platform assets from it on a machine with the tooling:
+`frontend/resources/icon.svg` is the 1024×1024 SAATH mark (two connected paths on the
+navy field `#071525`). Generate all platform assets from it on a machine with the tooling:
 
 ```sh
 cd frontend
-npx @capacitor/assets generate --iconBackgroundColor '#0c0e12' --splashBackgroundColor '#0c0e12'
+npx @capacitor/assets generate --iconBackgroundColor '#071525' --splashBackgroundColor '#071525'
 ```
 
 (If the generator won't take the SVG directly, export it to `resources/icon.png` at
