@@ -36,4 +36,4 @@ Implemented after three independent 30-day QA journeys on 24 August 2026.
 
 - Self-host a small licensed Lottie asset for workout-complete and 7/30-day milestones.
 - Prototype a lazy-loaded, static-fallback SAATH emblem only for major celebrations.
-- Code-split large translated exercise-instruction bundles before the Oracle deployment.
+- Code-split large translated exercise-instruction bundles on the next Oracle image rebuild.

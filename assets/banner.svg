@@ -1,26 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="660" height="190" viewBox="0 0 660 190" role="img" aria-label="SAATH — self-hosted gym & body-weight tracker">
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="190" viewBox="0 0 660 190" role="img" aria-label="SAATH — Progress, together.">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#12151b"/>
-      <stop offset="1" stop-color="#0c0e12"/>
+    <linearGradient id="bg" x1="52" y1="8" x2="620" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#102D4F"/>
+      <stop offset="1" stop-color="#071525"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="24" y1="36" x2="150" y2="160" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF7A3D"/>
+      <stop offset=".48" stop-color="#FF4F67"/>
+      <stop offset="1" stop-color="#7B61FF"/>
+    </linearGradient>
+    <linearGradient id="link" x1="36" y1="150" x2="140" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#53E0C1"/>
+      <stop offset="1" stop-color="#B9F86A"/>
     </linearGradient>
   </defs>
   <rect width="660" height="190" rx="22" fill="url(#bg)"/>
-  <rect x="1.5" y="1.5" width="657" height="187" rx="20.5" fill="none" stroke="#2b3140" stroke-width="3"/>
-
-  <!-- dumbbell mark (centered to the text block) -->
-  <g transform="translate(122,96) scale(0.8)" fill="#a3e635">
-    <rect x="-72" y="-10" width="144" height="20" rx="7"/>
-    <rect x="-80" y="-36" width="20" height="72" rx="7"/>
-    <rect x="-104" y="-25" width="17" height="50" rx="7"/>
-    <rect x="60"  y="-36" width="20" height="72" rx="7"/>
-    <rect x="87"  y="-25" width="17" height="50" rx="7"/>
+  <rect x="1.5" y="1.5" width="657" height="187" rx="20.5" fill="none" stroke="#1C3558" stroke-width="3"/>
+  <g transform="translate(28,28) scale(0.26)">
+    <path d="M362 117H217c-66 0-108 34-108 86 0 51 40 81 104 81h86c28 0 45 11 45 31 0 21-18 33-48 33H149" fill="none" stroke="url(#ribbon)" stroke-width="64" stroke-linecap="round"/>
+    <path d="M150 395h145c66 0 108-34 108-86 0-51-40-81-104-81h-86c-28 0-45-11-45-31 0-21 18-33 48-33h147" fill="none" stroke="url(#link)" stroke-width="34" stroke-linecap="round"/>
+    <circle cx="369" cy="117" r="19" fill="#FFF"/>
+    <circle cx="143" cy="395" r="19" fill="#FFF"/>
   </g>
-
-  <!-- wordmark + tagline -->
-  <text x="224" y="86" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="62" font-weight="800" letter-spacing="-2">
-    <tspan fill="#eef1f6">open</tspan><tspan fill="#a3e635">Gym</tspan>
-  </text>
-  <text x="226" y="120" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="20.5" font-weight="600" fill="#8b94a7">Self-hosted gym &amp; body-weight tracker</text>
-  <text x="226" y="146" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="500" fill="#5c6475">passkey login  ·  own your data  ·  docker  ·  AGPL</text>
+  <text x="196" y="92" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="58" font-weight="800" letter-spacing="6" fill="#F4EFE8">SAATH</text>
+  <text x="198" y="128" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="20" font-weight="600" fill="#E6B84A">Progress, together.</text>
+  <text x="198" y="154" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="14" font-weight="500" fill="#8AA0B8">private family tracker  ·  admin accounts  ·  docker  ·  AGPL</text>
 </svg>
